@@ -335,7 +335,7 @@ void(*__vector_timer0_b1)(void) = TimerB1_ISR;
 	TASK(8,  task_encrypt)
 	TASK(8,  task_start_encrypt)
 	TASK(9,  task_start_encrypt2)
-TASK(10,  task_start_encrypt3)
+	TASK(10,  task_start_encrypt3)
 
 	GLOBAL_SB(uint8_t*, return_to);	
 	GLOBAL_SB(char, result, LENGTH);

@@ -32,33 +32,6 @@ uint16_t        resultMovingPct[4];
 uint16_t        sum[4];
 )
 
-// //to .h
-// #define vbm_test(v) v == cur_version
-// #define vbm_set(v) v = cur_version
-
-// declaration
-__nv uint16_t _v_pinState_priv;
-__nv uint16_t _v_discardedSamplesCount_priv;
-//__nv ar_class_t _v_class_priv;//6   // 4  
-
-__nv uint16_t _v_totalCount_priv;
-__nv uint16_t _v_movingCount_priv;
-__nv uint16_t _v_stationaryCount_priv;//12   // 7   
-
-__nv accelReading _v_window_priv[ACCEL_WINDOW_SIZE];  //23   
-__nv accelReading _v_window_vbm[ACCEL_WINDOW_SIZE];
-
-//__nv ar_features_t _v_features_priv;//25   // 18   
-
-__nv uint16_t _v_trainingSetSize_priv;//27  
-
-__nv uint16_t _v_samplesInWindow_priv;
-//__nv ar_run_mode_t _v_mode_priv;  //31 
-
-__nv uint16_t _v_count_priv;
-
-
-
 __TASK_ENTRY(init,
 
 __GET(i_debug) = 0;
@@ -69,30 +42,7 @@ __GET(_v_count) = 0;
 return 1;
 )
 
-#define 
-
-__TASK(1, Select_Mode,  //在这里设置task numboots++ commit
-
-    //1.
-    _v_pinState_priv = __GET(_v_pinState);
-    _v_count_priv = __GET(_v_count);
-
-    //_v_discardedSamplesCount_priv = __GET(_v_discardedSamplesCount);
-    //_v_class_priv = __GET(_v_class);//6   // 4  
-
-    //_v_totalCount_priv = __GET(_v_totalCount);
-    //_v_movingCount_priv = __GET(_v_movingCount);
-    //_v_stationaryCount_priv = __GET(_v_stationaryCount);//12   // 7   
-
-    //_v_window_priv[ACCEL_WINDOW_SIZE];  //23   
-
-    //_v_features_priv = __GET(_v_features);//25   // 18   
-
-    //_v_trainingSetSize_priv = __GET(_v_trainingSetSize);//27  
-
-    //_v_samplesInWindow_priv = __GET(_v_samplesInWindow);
-    //_v_mode_priv = __GET(_v_mode);  //31 
-
+__TASK(1, Select_Mode,
 
        volatile uint16_t pin_state = MODE_TRAIN_MOVING;  // 1
        __GET(_v_count)++;
@@ -102,11 +52,11 @@ __TASK(1, Select_Mode,  //在这里设置task numboots++ commit
        else if(__GET(_v_count) >= 2)       pin_state = MODE_TRAIN_STATIONARY; // 2
 
        if ( (pin_state == MODE_TRAIN_STATIONARY || pin_state == MODE_TRAIN_MOVING)
-               && (pin_state == _v_pinState_priv) ) {  
+               && (pin_state == __GET(_v_pinState)) ) {
            pin_state = MODE_IDLE;
        }
        else {
-           _v_pinState_priv = pin_state;
+           __GET(_v_pinState) = pin_state;
        }
 
 
@@ -117,19 +67,6 @@ __TASK(1, Select_Mode,  //在这里设置task numboots++ commit
            __GET(_v_mode) = MODE_TRAIN_STATIONARY;
            __GET(_v_class) = CLASS_STATIONARY;
            __GET(_v_samplesInWindow) = 0;
-
-           //3
-           write_to_gbuf(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
-           //write_to_gbuf(&_v_discardedSamplesCount_priv, &_v_discardedSamplesCount, sizeof(_v_discardedSamplesCount));
-           //write_to_gbuf(&_v_class_priv, &_v_class_priv, sizeof(_v_class));
-  /*         write_to_gbuf(&_v_totalcount_priv, &_v_totalcount, sizeof(_v_totalcount));
-           write_to_gbuf(&_v_movingcount_priv, &_v_movingcount, sizeof(_v_movingcount));
-           write_to_gbuf(&_v_stationarycount_priv, &_v_stationarycount, sizeof(_v_stationarycount));
-           write_to_gbuf(&_v_features_priv, &_v_features, sizeof(_v_features));
-           write_to_gbuf(&_v_trainingsetsize_priv, &_v_trainingsetsize, sizeof(_v_trainingsetsize));
-           write_to_gbuf(&_v_samplesinwindow_priv, &_v_samplesinwindow, sizeof(_v_samplesinwindow));*/
-           write_to_gbuf(&_v_count_priv, &_v_count, sizeof(_v_count));
-
            return 7;
 
        case MODE_TRAIN_MOVING:
@@ -137,11 +74,6 @@ __TASK(1, Select_Mode,  //在这里设置task numboots++ commit
            __GET(_v_mode) = MODE_TRAIN_MOVING;
            __GET(_v_class) = CLASS_MOVING;
            __GET(_v_samplesInWindow) = 0;
-
-           //3
-           write_to_gbuf(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
-           write_to_gbuf(&_v_count_priv, &_v_count, sizeof(_v_count));
-
            return 7;
 
        case MODE_RECOGNIZE:
@@ -150,77 +82,44 @@ __TASK(1, Select_Mode,  //在这里设置task numboots++ commit
            __GET(_v_stationaryCount) = 0;
            __GET(_v_totalCount) = 0;
            __GET(_v_samplesInWindow) = 0;
-
-           //3
-           write_to_gbuf(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
-           write_to_gbuf(&_v_count_priv, &_v_count, sizeof(_v_count));
            return 2;
-
-       default: 
-           //3
-           write_to_gbuf(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
-           write_to_gbuf(&_v_count_priv, &_v_count, sizeof(_v_count));
-           return 1;
+       default: return 1;
        }
 )
 
 __TASK(2, AR_Sample,
 
-    //1.
-    _v_samplesInWindow_priv = __GET(_v_samplesInWindow);
-
        accelReading    aR_sample;
        AR_SingleSample(&aR_sample, &(__GET(ar_v_seed)));
 
-       __GET(_v_window[_v_samplesInWindow_priv].x) = (aR_sample).x;
-       __GET(_v_window[_v_samplesInWindow_priv].y) = (aR_sample).y;
-       __GET(_v_window[_v_samplesInWindow_priv].z) = (aR_sample).z;
-       ++_v_samplesInWindow_priv;
+       __GET(_v_window[__GET(_v_samplesInWindow)].x) = (aR_sample).x;
+       __GET(_v_window[__GET(_v_samplesInWindow)].y) = (aR_sample).y;
+       __GET(_v_window[__GET(_v_samplesInWindow)].z) = (aR_sample).z;
+       ++__GET(_v_samplesInWindow);
 
-       if (_v_samplesInWindow_priv < AR_ACCEL_WINDOW_SIZE) {
-           //3
-           write_to_gbuf(&_v_samplesInWindow_priv, &_v_samplesInWindow, sizeof(_v_samplesInWindow));
+       if (__GET(_v_samplesInWindow) < AR_ACCEL_WINDOW_SIZE) {
            return 2;
        }
        else {
-           _v_samplesInWindow_priv = 0;
-           //3
-           write_to_gbuf(&_v_samplesInWindow_priv, &_v_samplesInWindow, sizeof(_v_samplesInWindow));
+           __GET(_v_samplesInWindow) = 0;
            return 3;
        }
 )
 
-__TASK(3, AR_Transform,  //_v_window[]
+__TASK(3, AR_Transform,
 
        for (uint16_t i = 0; i < AR_ACCEL_WINDOW_SIZE; ++i)
        {
-
-           //before read 
-           if (!vbm_test(_v_window_vbm[i])) {
-               _v_window_priv[i] = __GET(_v_window[i]);
-           }
-  /*         if (!vbm_test(_v_window_vbm[i].y)) {
-               _v_window_priv[i].y = __GET(_v_window[i].y;
-           }
-           if (!vbm_test(_v_window_vbm[i].z)) {
-               _v_window_priv[i].z = __GET(_v_window[i].z;
-           }*/
-
-           if (__GET(_v_window_priv[i].x) < AR_SAMPLE_NOISE_FLOOR ||
-                   __GET(_v_window_priv[i].y) < AR_SAMPLE_NOISE_FLOOR ||
-                         __GET(_v_window_priv[i].z) < AR_SAMPLE_NOISE_FLOOR)
+           if (__GET(_v_window[i].x) < AR_SAMPLE_NOISE_FLOOR ||
+                   __GET(_v_window[i].y) < AR_SAMPLE_NOISE_FLOOR ||
+                         __GET(_v_window[i].z) < AR_SAMPLE_NOISE_FLOOR)
            {
-               __GET(_v_window_priv[i].x) =
-                       __GET(_v_window_priv[i].x) > AR_SAMPLE_NOISE_FLOOR ? __GET(_v_window_priv[i].x) : 0;
-               __GET(_v_window_priv[i].y) =
-                       __GET(_v_window_priv[i].y) > AR_SAMPLE_NOISE_FLOOR ? __GET(_v_window_priv[i].y) : 0;
-               __GET(_v_window_priv[i].z) =
-                       __GET(_v_window_priv[i].z) > AR_SAMPLE_NOISE_FLOOR ? __GET(_v_window_priv[i].z) : 0;
-               //after wt
-               if (!vbm_test(_v_window_vbm[i])) {
-                   vbm_set(_v_window_vbm[i]);
-                   write_to_gbuf(&_v_window_priv[i], &_v_window[i], sizeof(_v_window[i]));
-               }
+               __GET(_v_window[i].x) =
+                       __GET(_v_window[i].x) > AR_SAMPLE_NOISE_FLOOR ? __GET(_v_window[i].x) : 0;
+               __GET(_v_window[i].y) =
+                       __GET(_v_window[i].y) > AR_SAMPLE_NOISE_FLOOR ? __GET(_v_window[i].y) : 0;
+               __GET(_v_window[i].z) =
+                       __GET(_v_window[i].z) > AR_SAMPLE_NOISE_FLOOR ? __GET(_v_window[i].z) : 0;
            }
        }
 return 4;
@@ -333,106 +232,75 @@ __TASK(5, AR_Classify,
 
 __TASK(6, AR_Stats,
 
-    //1.
-    _v_totalCount_priv = __GET(_v_totalCount);
-_v_movingCount_priv = __GET(_v_movingCount);
-_v_stationaryCount_priv = __GET(_v_stationaryCount);
-
-       _v_totalCount_priv++;
+       __GET(_v_totalCount)++;
        switch(__GET(_v_class))
        {
        case CLASS_MOVING:
-           _v_movingCount_priv++;
+           __GET(_v_movingCount)++;
            break;
        case CLASS_STATIONARY:
-           _v_stationaryCount_priv++;
+           __GET(_v_stationaryCount)++;
            break;
        }
 
-       if (_v_totalCount_priv == AR_SAMPLES_TO_COLLECT)
+       if (__GET(_v_totalCount) == AR_SAMPLES_TO_COLLECT)
        {
            __GET(resultStationaryPct[__GET(i_debug)]) =
-                   _v_stationaryCount_priv * 100 / _v_totalCount_priv;
+                   __GET(_v_stationaryCount) * 100 / __GET(_v_totalCount);
 
            __GET(resultMovingPct[__GET(i_debug)]) =
-                   _v_movingCount_priv * 100 / _v_totalCount_priv;
+                   __GET(_v_movingCount) * 100 / __GET(_v_totalCount);
 
            __GET(sum[__GET(i_debug)]) =
-                   _v_stationaryCount_priv + _v_movingCount_priv;
+                   __GET(_v_stationaryCount) + __GET(_v_movingCount);
 
            __GET(i_debug)++;
-
-           //3
-           write_to_gbuf(&_v_totalCount_priv, &_v_totalCount, sizeof(_v_totalCount));
-           write_to_gbuf(&_v_movingCount_priv, &_v_movingCount, sizeof(_v_movingCount));
-           write_to_gbuf(&_v_stationaryCount_priv, &_v_stationaryCount, sizeof(_v_stationaryCount));
-
            return 1;
        }
        else {
-           //3
-           write_to_gbuf(&_v_totalCount_priv, &_v_totalCount, sizeof(_v_totalCount));
-           write_to_gbuf(&_v_movingCount_priv, &_v_movingCount, sizeof(_v_movingCount));
-           write_to_gbuf(&_v_stationaryCount_priv, &_v_stationaryCount, sizeof(_v_stationaryCount));
-
            return 2;
        }
 )
 
 __TASK(7, Warm_Up,
-    //1.
-    _v_discardedSamplesCount_priv = __GET(_v_discardedSamplesCount);
 
        threeAxis_t_8 tA8_sample;
        if (__GET(_v_discardedSamplesCount) < AR_NUM_WARMUP_SAMPLES)
        {
            AR_SingleSample(&tA8_sample, &(__GET(ar_v_seed)));
            __GET(_v_discardedSamplesCount)++;
-           //3
-           write_to_gbuf(&_v_discardedSamplesCount_priv, &_v_discardedSamplesCount, sizeof(_v_discardedSamplesCount));
            return 7;
        }
        else
        {
            __GET(_v_trainingSetSize) = 0;
-           //3
-           write_to_gbuf(&_v_discardedSamplesCount_priv, &_v_discardedSamplesCount, sizeof(_v_discardedSamplesCount));
            return 2;
        }
 )
 
 __TASK(8, AR_Train,
 
-    //1.
-    _v_trainingSetSize_priv = __GET(_v_trainingSetSize);//
-
        switch(__GET(_v_class))
        {
        case CLASS_STATIONARY:
-           __GET(_v_model_stationary[_v_trainingSetSize_priv].meanmag) =
+           __GET(_v_model_stationary[__GET(_v_trainingSetSize)].meanmag) =
                    __GET(_v_features.meanmag);
-           __GET(_v_model_stationary[_v_trainingSetSize_priv].stddevmag) =
+           __GET(_v_model_stationary[__GET(_v_trainingSetSize)].stddevmag) =
                    __GET(_v_features.stddevmag);
            break;
        case CLASS_MOVING:
-           __GET(_v_model_moving[_v_trainingSetSize_priv].meanmag) =
+           __GET(_v_model_moving[__GET(_v_trainingSetSize)].meanmag) =
                    __GET(_v_features.meanmag);
-           __GET(_v_model_moving[_v_trainingSetSize_priv].stddevmag) =
+           __GET(_v_model_moving[__GET(_v_trainingSetSize)].stddevmag) =
                    __GET(_v_features.stddevmag);
            break;
        }
 
-       _v_trainingSetSize_priv++;
-       if(_v_trainingSetSize_priv < AR_MODEL_SIZE) {
-           //3
-           write_to_gbuf(&_v_trainingSetSize_priv, &_v_trainingSetSize, sizeof(_v_trainingSetSize));
-
+       __GET(_v_trainingSetSize)++;
+       if(__GET(_v_trainingSetSize) < AR_MODEL_SIZE) {
            return 2;
        }
        else {
-           //3
-           write_to_gbuf(&_v_trainingSetSize_priv, &_v_trainingSetSize, sizeof(_v_trainingSetSize));
-
            return 1;
        }
 )

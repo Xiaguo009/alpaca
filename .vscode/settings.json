@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "stdint.h": "c",
+        "app_api.h": "c",
+        "scheduler_based_task.h": "c"
+    }
+}

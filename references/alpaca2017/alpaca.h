@@ -104,7 +104,7 @@ void _init();
 /** @brief Declare the function to be called on each boot
  *  @details The same notes apply as for entry task.
  */
-#define INIT_FUNC(func) void _init() { func(); }
+#define INIT_FUNC(func) void _init() { func(); }  //init就是执行fun().可以做成最后的函数跳转 但是PC都做成内联的了 也就是task也不能做成函数了
 
 /**
  *  @brief way to simply rename vars. I don't need it actually.
