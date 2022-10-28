@@ -25,29 +25,6 @@ __nv uint16_t sorted_vbm[SORT_LENGTH];
 //1 for vbm
 
 
-//2 define in alpaca.h
-//
-#define __COMMIT commit() //inline or call? like cpu_wirte()
-
-#define __TASK(id, name) \
-    name:                \
-    ++_numBoots;         \
-    __COMMIT;   //inline?             
-    //status |= 0xF000  //?
-
-#define __TRANSITION_TO(id, name) \
-    needCommit = 1;                             \
-    status = id;                  \
-    goto name
-
-#define __TASK_DOWN return
-
-#define __GET_CURTASK  (status & 0x0FFF) 
-// 
-//2 define in alpaca.h
-
-
-
 void pc_sort_main()
 {
 

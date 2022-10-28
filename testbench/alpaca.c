@@ -43,22 +43,25 @@ void write_to_gbuf(uint8_t *data_src, uint8_t *data_dest, size_t var_size)
 //
 // for PC: backup_needed[__GET_CURTASK]==true  from __BUILDIN_TASK_BOUNDARY
 
-// increment version
-++_numBoots;
-// commit if needed
-if (curctx->needCommit) {
-	while (gv_index < num_dirty_gv) {
-		uint8_t* w_data_dest = *(data_dest_base + gv_index);
-		uint8_t* w_data_src= *(data_src_base + gv_index);
-		unsigned w_data_size = *(data_size_base + gv_index);
-		memcpy(w_data_dest, w_data_src, w_data_size);
-		++gv_index;
+void commit(){
+	if (needCommit == 1)
+	{
+		while (gv_index < num_dirty_gv)
+		{
+			uint8_t *w_data_dest = *(data_dest_base + gv_index);
+			uint8_t *w_data_src = *(data_src_base + gv_index);
+			unsigned w_data_size = *(data_size_base + gv_index);
+			memcpy(w_data_dest, w_data_src, w_data_size);
+			++gv_index;
+		}
+		num_dirty_gv = 0;
+		gv_index = 0;
+		// commit bit = 0
+		needCommit = 0;
 	}
-	num_dirty_gv = 0;
-	gv_index = 0;
-	//commit bit = 0
-	curctx->needCommit = 0;
+	else {
+		num_dirty_gv=0;
+	}
 }
-else {
-	num_dirty_gv=0;
-}
+
+
