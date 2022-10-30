@@ -11,9 +11,10 @@ extern __nv uint8_t backup_error_flag;
 extern __nv uint8_t recovery_needed;
 extern __nv uint8_t system_in_lpm;
 
-void JIT_only();
+//void JIT_only();
+void alpaca();
 void Periodic_only();
-void Adaptive();
+//void Adaptive();
 
 int main()
 {
@@ -43,8 +44,14 @@ int main()
 
     // TODO: run testbench
     //JIT_only();
+    alpaca();
     Periodic_only();
     //Adaptive();
+}
+
+//
+void alpaca(){
+     (* (alpaca_sort_main))();
 }
 
 void JIT_only() {

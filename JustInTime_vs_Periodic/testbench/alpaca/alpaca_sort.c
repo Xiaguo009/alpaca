@@ -1,11 +1,12 @@
 
-#include "alpaca.h"
+#include <testbench/alpaca.h>
+#include <testbench/global_declaration.h>
+#include <testbench/testbench_api.h>
 
-__SHARED_VAR(
-uint16_t sorted[SORT_LENGTH];
-uint16_t inner_index;
-uint16_t outer_index;
-)
+//shared vars
+__SHARED1(uint16_t, inner_index);
+__SHARED1(uint16_t, outer_index);
+__SHARED2(uint16_t, sorted, SORT_LENGTH);
 
 //3 vars
 //
@@ -15,17 +16,17 @@ static __nv uint16_t  status = 0;  //cur_task->id
 //1 for vbm
 //
 // scalar: declaration of the buffer 
-__nv uint16_t inner_index_priv;
-__nv uint16_t outer_index_priv;
+static __nv uint16_t inner_index_priv;
+static __nv uint16_t outer_index_priv;
 //
 // vector: declaration of the buffer and vbm
-__nv uint16_t sorted_priv[SORT_LENGTH];
-__nv uint16_t sorted_vbm[SORT_LENGTH];
+static __nv uint16_t sorted_priv[SORT_LENGTH];
+static __nv uint16_t sorted_vbm[SORT_LENGTH];
 //
 //1 for vbm
 
 
-void pc_sort_main()
+void alpaca_sort_main()
 {
 
     switch(__GET_CURTASK) {
@@ -76,7 +77,7 @@ void pc_sort_main()
     //wt
     sorted_priv[__GET(outer_index)] = val_outer;
     // vector: pre_commit after the first write
-    if (!vbm_test(sorted_vbm[__GET(outer_index)]))) {
+    if (!vbm_test(sorted_vbm[__GET(outer_index)])) {
         vbm_set(sorted_vbm[__GET(outer_index)]);
         write_to_gbuf(&sorted_priv[__GET(outer_index)], &sorted[__GET(outer_index)], sizeof(sorted[__GET(outer_index)]));
     }
@@ -93,7 +94,7 @@ void pc_sort_main()
     ++inner_index_priv;
     if (inner_index_priv < SORT_LENGTH) {
 
-        // scalar: pre_commit before transition_to
+        // scalar: pre_commit before transition_to=
         write_to_gbuf(&inner_index_priv, &inner_index, sizeof(inner_index));
         __TRANSITION_TO(1, inner_loop);
     }
@@ -110,9 +111,9 @@ void pc_sort_main()
     ++outer_index_priv;
     __GET(inner_index) = outer_index_priv + 1;
 
-    if (outer_index_priv < SORT_LENGTH - 1)
+    if (outer_index_priv < SORT_LENGTH - 1){
         write_to_gbuf(&outer_index_priv, &outer_index, sizeof(outer_index));
-        __TRANSITION_TO(1, inner_loop);
+        __TRANSITION_TO(1, inner_loop);}
     else {  
         write_to_gbuf(&outer_index_priv, &outer_index, sizeof(outer_index));
         __TASK_DOWN;  //return

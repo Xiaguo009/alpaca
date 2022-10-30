@@ -21,6 +21,9 @@ void pc_dijkstra_main();
 void pc_rsa_main();
 void pc_sort_main();
 
+//alpaca
+void alpaca_sort_main();
+
 typedef void (*FUNCPTR)();
 
 #endif /* APPS_APP_H_ */
