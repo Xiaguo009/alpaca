@@ -2,6 +2,32 @@
 #include <testbench/global_declaration.h>
 #include <testbench/testbench_api.h>
 
+#define LENGTH 13
+
+#define __NEXT_TASK(id)                           \
+	switch (id)                                   \
+	{                                             \
+	case 0:                                       \
+		__TRANSITION_TO(0, task_init);            \
+	case 1:                                       \
+		__TRANSITION_TO(1, task_set_ukey);        \
+	case 3:                                       \
+		__TRANSITION_TO(3, task_init_key);        \
+	case 4:                                       \
+		__TRANSITION_TO(4, task_init_s);          \
+	case 5:                                       \
+		__TRANSITION_TO(5, task_set_key);         \
+	case 6:                                       \
+		__TRANSITION_TO(6, task_set_key2);        \
+	case 7:                                       \
+		__TRANSITION_TO(7, task_encrypt);         \
+	case 8:                                       \
+		__TRANSITION_TO(8, task_start_encrypt);   \
+	case 9:                                       \
+		__TRANSITION_TO(9, task_start_encrypt2);  \
+	case 10:                                      \
+		__TRANSITION_TO(10, task_start_encrypt3); \
+	};
 
 static __ro_nv const char cp[32] = {'1','2','3','4','5','6','7','8','9','0',
 	'A','B','C','D','E','F','F','E','D','C','B','A',
@@ -301,6 +327,8 @@ __GLOBAL_ARRAY(uint32_t, input, 2);
 __GLOBAL_ARRAY(unsigned char, iv, 8);
 __GLOBAL_ARRAY(uint32_t, key, 18);
 
+__GLOBAL_SCALAR(unsigned, next_task);
+
 //scalar
 __nv unsigned index_priv;
 __nv uint32_t index2_priv;
@@ -345,15 +373,15 @@ void alpaca_blowfish_main()
 
 	__TASK(1, task_set_ukey);
 
-	unsigned i = 0;
+	 i = 0;
 	unsigned by = 0;
 	while (i < 32) {
 		if(cp[i] >= '0' && cp[i] <= '9')
 			by = (by << 4) + cp[i] - '0';
 		else if(cp[i] >= 'A' && cp[i] <= 'F') //currently, key should be 0-9 or A-F
 			by = (by << 4) + cp[i] - 'A' + 10;
-		else
-			PRINTF("Key must be hexadecimal!!\r\n");
+		//else
+			//PRINTF("Key must be hexadecimal!!\r\n");
 		if ((i++) & 1) {
 			__GET(ukey[i/2-1]) = by & 0xff;
 			//LOG("ukey[%u]: %u\r\n",i/2-1,by & 0xff);
@@ -368,7 +396,7 @@ void alpaca_blowfish_main()
 
 
 	__TASK(3, task_init_key);
-	unsigned i;
+	//unsigned i;
 	for (i = 0; i < 18; ++i) {
 		__GET(key[i]) = init_key[i];
 	}
@@ -378,7 +406,7 @@ void alpaca_blowfish_main()
 	__TASK(4, task_init_s);
 	index_priv = __GET(index);//scaler
 
-	unsigned i;
+	//unsigned i;
 
 	for (i = 0; i < 256; ++i) {
 		//if (__GET(index) == 0) 
@@ -398,7 +426,7 @@ void alpaca_blowfish_main()
 	if(index_priv == 3){
 		//pre_commit
 		write_to_gbuf(&index_priv, &index, sizeof(index));
-		 __TRANSITION_TO(5, ask_set_key);
+		 __TRANSITION_TO(5, task_set_key);
 	}
 	else {
 		//++__GET(index);
@@ -411,7 +439,7 @@ void alpaca_blowfish_main()
 
 	__TASK(5, task_set_key);
 
-	unsigned i;
+	//unsigned i;
 	uint32_t ri, ri2;
 	unsigned d = 0;
 	for (i = 0; i < 18; ++i) {
@@ -448,7 +476,7 @@ void alpaca_blowfish_main()
 		__GET(input[1]) = 0;
 
 		index2_priv += 2;
-		//__GET(next_task) = TASK_REF(task_set_key2);
+		__GET(next_task) = 6;
 
         write_to_gbuf(&index2_priv, &index2, sizeof(index2));
 		 __TRANSITION_TO(7, task_encrypt);
@@ -552,20 +580,23 @@ void alpaca_blowfish_main()
 	input_priv[1] = r;
 	if (!vbm_test(input_vbm[1])) {
 		vbm_set(input_vbm[1]);
-		write_to_gbuf(&input_priv[1], &input[1], sizeof(input[1])); //__GET?}
-	
+		write_to_gbuf(&input_priv[1], &input[1], sizeof(input[1]));
+	}
+
 	input_priv[0] = l;
 	if (!vbm_test(input_vbm[0])) {
 		vbm_set(input_vbm[0]);
-		write_to_gbuf(&input_priv[0], &input[0], sizeof(input[0])); //__GET?}
+		write_to_gbuf(&input_priv[0], &input[0], sizeof(input[0]));
+	}
 
-	 __TRANSITION_TO(6, task_set_key2);
+	__NEXT_TASK(next_task);
+	//__TRANSITION_TO(6, task_set_key2);
 
 
 
 
 	__TASK(8, task_start_encrypt);
-	unsigned i; 
+	//unsigned i;
 	//	n = *READ(__GET(n));
 	if (__GET(n) == 0) {
 		__GET(input[0]) =((unsigned long)(__GET(iv[0])))<<24L;
@@ -576,8 +607,8 @@ void alpaca_blowfish_main()
 		__GET(input[1])|=((unsigned long)(__GET(iv[5])))<<16L;
 		__GET(input[1])|=((unsigned long)(__GET(iv[6])))<< 8L;
 		__GET(input[1])|=((unsigned long)(__GET(iv[7])));
-		__GET(next_task) = TASK_REF(task_start_encrypt2);
-		 __TRANSITION_TO(7, task_encrypt);
+		__GET(next_task) = 9; // TASK_REF(task_start_encrypt2);
+		__TRANSITION_TO(7, task_encrypt);
 	}
 	else {
 		 __TRANSITION_TO(10, task_start_encrypt3);
@@ -611,7 +642,7 @@ void alpaca_blowfish_main()
     if (!vbm_test(iv_vbm[n])) {iv_priv[n] = __GET(iv[n]);}
     c = indata[index2_priv]^(iv_priv[n]);
 
-	__GET(result, index2) = c;
+	__GET(result[index2]) = c;
 	//PRINTF("result: %x\r\n", c);
 
     //wr

@@ -10,18 +10,18 @@ __GLOBAL_ARRAY(uint16_t, sorted, SORT_LENGTH);
 
 //3 vars
 //
-__nv uint16_t  status = 0;  //cur_task->id
+static __nv uint16_t  status = 0;  //cur_task->id
 
 
 //1 for vbm
 //
 // scalar: declaration of the buffer 
-__nv uint16_t inner_index_priv;
-__nv uint16_t outer_index_priv;
+static __nv uint16_t inner_index_priv;
+static __nv uint16_t outer_index_priv;
 //
 // vector: declaration of the buffer and vbm
-__nv uint16_t sorted_priv[SORT_LENGTH];
-__nv uint16_t sorted_vbm[SORT_LENGTH];
+static __nv uint16_t sorted_priv[SORT_LENGTH];
+static __nv uint16_t sorted_vbm[SORT_LENGTH];
 //
 //1 for vbm
 

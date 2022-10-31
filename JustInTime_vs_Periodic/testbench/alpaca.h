@@ -25,6 +25,17 @@ extern unsigned* data_size_base;
 extern volatile unsigned num_dirty_gv;
 void write_to_gbuf(uint16_t *data_src, uint16_t *data_dest, size_t var_size);
 
+// template<class T1,class T2>
+// void write_to_gbuf(T1 *data_src, T1 *data_dest, T2 var_size)
+// {
+// 	// save to dirtylist
+// 	*(data_size_base + num_dirty_gv) = var_size;
+// 	*(data_dest_base + num_dirty_gv) = data_dest;
+// 	*(data_src_base + num_dirty_gv) = data_src;
+// 	// increment count, len of dirty list
+// 	num_dirty_gv++;
+// }
+
 
 //3.commit --task_prologue?
 //
@@ -59,8 +70,8 @@ void commit();
 #define __SHARED2(type, name, size) static __nv type name[size]
 
 // SHARED->
-#define __GLOBAL_SCALAR(type, name)  __nv type name
-#define __GLOBAL_ARRAY(type, name, size)  __nv type name[size]
+#define __GLOBAL_SCALAR(type, name)  static __nv type name
+#define __GLOBAL_ARRAY(type, name, size)  static __nv type name[size]
 
 
 #define __GET(item) item

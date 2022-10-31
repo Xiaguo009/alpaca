@@ -4,4 +4,6 @@
 
 #define __nv __attribute__((section(".TI.persistent")))
 
+#define __ro_nv __attribute__((section(".ro_nv_vars")))
+
 #endif /* DRIVER_NV_H_ */

@@ -49,6 +49,7 @@ void write_to_gbuf(uint16_t *data_src, uint16_t *data_dest, size_t var_size)
 }
 
 
+
 // 3 cur_version++ and commit  --> inline ?
 //
 // for PC: backup_needed[__GET_CURTASK]==true  from __BUILDIN_TASK_BOUNDARY
