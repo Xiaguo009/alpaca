@@ -58,8 +58,15 @@ void commit();
 #define __SHARED1(type, name) static __nv type name
 #define __SHARED2(type, name, size) static __nv type name[size]
 
+// SHARED->
+#define __GLOBAL_SCALAR(type, name)  __nv type name
+#define __GLOBAL_ARRAY(type, name, size)  __nv type name[size]
+
 
 #define __GET(item) item
+
+// #define GV(item) item //for blowfish
+// //GV(item,size)? -->__GET(sorted[temp])
 
 
 #endif // ALPACA_H

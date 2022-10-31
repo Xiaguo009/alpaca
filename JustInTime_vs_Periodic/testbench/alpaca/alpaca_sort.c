@@ -4,24 +4,24 @@
 #include <testbench/testbench_api.h>
 
 //shared vars
-__SHARED1(uint16_t, inner_index);
-__SHARED1(uint16_t, outer_index);
-__SHARED2(uint16_t, sorted, SORT_LENGTH);
+__GLOBAL_SCALAR(uint16_t, inner_index);
+__GLOBAL_SCALAR(uint16_t, outer_index);
+__GLOBAL_ARRAY(uint16_t, sorted, SORT_LENGTH);
 
 //3 vars
 //
-static __nv uint16_t  status = 0;  //cur_task->id
+__nv uint16_t  status = 0;  //cur_task->id
 
 
 //1 for vbm
 //
 // scalar: declaration of the buffer 
-static __nv uint16_t inner_index_priv;
-static __nv uint16_t outer_index_priv;
+__nv uint16_t inner_index_priv;
+__nv uint16_t outer_index_priv;
 //
 // vector: declaration of the buffer and vbm
-static __nv uint16_t sorted_priv[SORT_LENGTH];
-static __nv uint16_t sorted_vbm[SORT_LENGTH];
+__nv uint16_t sorted_priv[SORT_LENGTH];
+__nv uint16_t sorted_vbm[SORT_LENGTH];
 //
 //1 for vbm
 
