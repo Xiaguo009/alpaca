@@ -19,11 +19,16 @@ extern volatile unsigned _numBoots;
 // extern uint8_t* data_src[];  //extern from??
 // extern uint8_t* data_dest[];
 // extern unsigned data_size[];
-extern uint16_t** data_src_base;
-extern uint16_t** data_dest_base;
-extern unsigned* data_size_base;
+//extern uint16_t** data_src_base;
+//extern uint16_t** data_dest_base;
+//extern unsigned* data_size_base;
+extern unsigned long data_src_base[100];
+extern unsigned long data_dest_base[100];
+extern unsigned long data_size_base[100];
+
 extern volatile unsigned num_dirty_gv;
-void write_to_gbuf(uint16_t *data_src, uint16_t *data_dest, size_t var_size);
+void write_to_gbuf(unsigned long data_src, unsigned long data_dest, size_t var_size);
+//void write_to_gbuf(uint16_t *data_src, uint16_t *data_dest, size_t var_size);
 
 // template<class T1,class T2>
 // void write_to_gbuf(T1 *data_src, T1 *data_dest, T2 var_size)
