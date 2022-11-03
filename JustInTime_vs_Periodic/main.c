@@ -51,7 +51,12 @@ int main()
 
 //
 void alpaca(){
-     (* (alpaca_sort_main))();
+     //(* (alpaca_sort_main))();
+     (* (alpaca_bc_main))();
+     (* (alpaca_cem_main))();
+     (* (alpaca_crc_main))();
+     (* (alpaca_dijkstra_main))();
+     //pass test
 }
 
 void JIT_only() {
