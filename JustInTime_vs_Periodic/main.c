@@ -52,10 +52,12 @@ int main()
 //
 void alpaca(){
      //(* (alpaca_sort_main))();
-     (* (alpaca_bc_main))();
+     /*(* (alpaca_bc_main))();
      (* (alpaca_cem_main))();
      (* (alpaca_crc_main))();
      (* (alpaca_dijkstra_main))();
+     (* (alpaca_ar_main))();
+     (* (alpaca_cuckoo_main))(); */
      //pass test
 }
 

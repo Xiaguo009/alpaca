@@ -46,7 +46,7 @@ static __nv uint16_t _v_movingCount_priv;
 static __nv uint16_t _v_stationaryCount_priv;//12   // 7   
 
 static __nv accelReading _v_window_priv[AR_ACCEL_WINDOW_SIZE];  //23   
-static __nv accelReading _v_window_vbm[AR_ACCEL_WINDOW_SIZE];
+static __nv uint16_t _v_window_vbm[AR_ACCEL_WINDOW_SIZE];
 
 //static __nv ar_features_t _v_features_priv;//25   // 18   
 
@@ -114,11 +114,11 @@ void alpaca_ar_main()
 
 
        volatile uint16_t pin_state = MODE_TRAIN_MOVING;  // 1
-       __GET(_v_count)++;
+       _v_count_priv++;
 
-       if(__GET(_v_count) >= 7)            __TASK_DOWN;// return TASK_FINISH;
-       else if(__GET(_v_count) >= 3)       pin_state = MODE_RECOGNIZE;        // 0
-       else if(__GET(_v_count) >= 2)       pin_state = MODE_TRAIN_STATIONARY; // 2
+       if(_v_count_priv >= 7)            __TASK_DOWN;// return TASK_FINISH;
+       else if(_v_count_priv >= 3)       pin_state = MODE_RECOGNIZE;        // 0
+       else if(_v_count_priv >= 2)       pin_state = MODE_TRAIN_STATIONARY; // 2
 
        if ( (pin_state == MODE_TRAIN_STATIONARY || pin_state == MODE_TRAIN_MOVING)
                && (pin_state == _v_pinState_priv) ) {  
@@ -403,10 +403,10 @@ __TASK(7, Warm_Up);
 _v_discardedSamplesCount_priv = __GET(_v_discardedSamplesCount);
 
         threeAxis_t_8 tA8_sample;
-        if (__GET(_v_discardedSamplesCount) < AR_NUM_WARMUP_SAMPLES)
+        if (_v_discardedSamplesCount_priv < AR_NUM_WARMUP_SAMPLES)
         {
            AR_SingleSample(&tA8_sample, &(__GET(ar_v_seed)));
-           __GET(_v_discardedSamplesCount)++;
+           _v_discardedSamplesCount_priv++;
            //3
            write_to_gbuf(&_v_discardedSamplesCount_priv, &_v_discardedSamplesCount, sizeof(_v_discardedSamplesCount));
            __TRANSITION_TO(7, Warm_Up);

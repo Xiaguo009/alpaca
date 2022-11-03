@@ -27,7 +27,7 @@ static __nv uint16_t  status = 0;  //cur_task->id
 
 //0. all
 static __nv cuckoo_fingerprint_t   _v_filter_priv[CUCKOO_NUM_BUCKETS];
-static __nv cuckoo_fingerprint_t   _v_filter_vbm[CUCKOO_NUM_BUCKETS];
+static __nv uint16_t   _v_filter_vbm[CUCKOO_NUM_BUCKETS];
 
 //static __nv uint16_t               _v_index_priv;
 
@@ -59,10 +59,10 @@ switch(__GET_CURTASK) {
         goto KeyGenerate;
     case 2:
         goto shared_calc_index;
-    case 3:
-        goto Insert;
-    case 4:
-        goto Lookup;
+    // case 3:
+    //     goto Insert;
+    // case 4:
+    //     goto Lookup;
     case 5:
         goto Add;
     case 6:
@@ -94,16 +94,18 @@ __TASK(1, KeyGenerate);
 _v_key_priv = __GET(_v_key);
 
 
-__GET(_v_key) = (__GET(_v_key) + 1) * 17;
+_v_key_priv = (_v_key_priv + 1) * 17;
 if (__GET(_v_next_task) == CUCKOO_Insert) {
-    //3
+    __GET(_v_next_task) = CUCKOO_Add;  
+
     write_to_gbuf(&_v_key_priv, &_v_key, sizeof(_v_key));
-    __TRANSITION_TO(3,Insert);
+    __TRANSITION_TO(2, shared_calc_index);
 }
 else if (__GET(_v_next_task) == CUCKOO_Lookup) {
-    //3
+    __GET(_v_next_task) = CUCKOO_Lookup_Search;
+    
     write_to_gbuf(&_v_key_priv, &_v_key, sizeof(_v_key));
-    __TRANSITION_TO(4, Lookup);
+    __TRANSITION_TO(2, shared_calc_index);
 }
 //3
 write_to_gbuf(&_v_key_priv, &_v_key, sizeof(_v_key));
@@ -136,22 +138,26 @@ else if (__GET(_v_next_task) == CUCKOO_Lookup_Search) {
     write_to_gbuf(&_v_fingerprint_priv, &_v_fingerprint, sizeof(_v_fingerprint));
     __TRANSITION_TO( 8,Lookup_Search);
 }
+
+    __GET(_v_next_task) = CUCKOO_Add;
+    __TRANSITION_TO(2, shared_calc_index);
+
 //3
-write_to_gbuf(&_v_key_priv, &_v_key, sizeof(_v_key));
-write_to_gbuf(&_v_fingerprint_priv, &_v_fingerprint, sizeof(_v_fingerprint));
-__TRANSITION_TO(3,Insert);
+// write_to_gbuf(&_v_key_priv, &_v_key, sizeof(_v_key));
+// write_to_gbuf(&_v_fingerprint_priv, &_v_fingerprint, sizeof(_v_fingerprint));
+// __TRANSITION_TO(3,Insert);
 
 
-__TASK(3, Insert);
+// __TASK(3, Insert);
 
-__GET(_v_next_task) = CUCKOO_Add;
-__TRANSITION_TO(2,shared_calc_index);
+// __GET(_v_next_task) = CUCKOO_Add;
+// __TRANSITION_TO(2,shared_calc_index);
 
 
-__TASK(4, Lookup);
+// __TASK(4, Lookup);
 
-__GET(_v_next_task) = CUCKOO_Lookup_Search;
-__TRANSITION_TO(2,shared_calc_index);
+// __GET(_v_next_task) = CUCKOO_Lookup_Search;
+// __TRANSITION_TO(2,shared_calc_index);
 
 
 __TASK(5, Add);  //_v_filter[]
@@ -261,11 +267,11 @@ _v_relocation_count_priv = __GET(_v_relocation_count);
 _v_fingerprint_priv = __GET(_v_fingerprint);
 
 
-cuckoo_fingerprint_t fp_victim = __GET(_v_fingerprint);
+cuckoo_fingerprint_t fp_victim = _v_fingerprint_priv;
 cuckoo_index_t fp_hash_victim = CUCKOO_Hash2Index(fp_victim);
-cuckoo_index_t index2_victim = __GET(_v_index1) ^ fp_hash_victim;
+cuckoo_index_t index2_victim = _v_index1_priv ^ fp_hash_victim;
 
-__GET(_v_index1) ^ CUCKOO_Hash2Index(__GET(_v_fingerprint))  //??
+//__GET(_v_index1) ^ CUCKOO_Hash2Index(__GET(_v_fingerprint))  //??
 
 //rd
 if (!vbm_test(_v_filter_vbm[index2_victim])) {
@@ -291,7 +297,7 @@ if (!__GET(_v_filter_priv[index2_victim]))
 }
 else
 {
-   if (__GET(_v_relocation_count) >= CUCKOO_MAX_RELOCATIONS)
+   if (_v_relocation_count_priv >= CUCKOO_MAX_RELOCATIONS)
    {
        __GET(_v_success) = 0;
        //3
@@ -302,14 +308,14 @@ else
        __TRANSITION_TO(7, Insert_Done);
    }
 
-   __GET(_v_relocation_count)++;
-   __GET(_v_index1) = index2_victim;
+   _v_relocation_count_priv++;
+   _v_index1_priv = index2_victim;
 
    //rd
    if (!vbm_test(_v_filter_vbm[index2_victim])) {
        _v_filter_priv[index2_victim] = __GET(_v_filter[index2_victim]);
    }
-   __GET(_v_fingerprint) = __GET(_v_filter_priv[index2_victim]);
+   _v_fingerprint_priv = __GET(_v_filter_priv[index2_victim]);
    __GET(_v_filter_priv[index2_victim]) = fp_victim;
    //wt
    if (!vbm_test(_v_filter_vbm[index2_victim])) {
@@ -341,16 +347,16 @@ __TASK(7, Insert_Done);
   _v_relocation_count_priv = __GET(_v_relocation_count);*/
   _v_insert_count_priv = __GET(_v_insert_count);//
 
-  _v_inserted_count_priv = __GET(_v_insert_count); //+_v_insert_count
+  _v_inserted_count_priv = __GET(_v_inserted_count); //+_v_insert_count
   
 
 
-__GET(_v_insert_count)++;
-uint16_t __cry = __GET(_v_inserted_count);
+_v_insert_count_priv++;
+uint16_t __cry = _v_inserted_count_priv;
 __cry += __GET(_v_success);
-__GET(_v_inserted_count) = __cry;
+_v_inserted_count_priv = __cry;
 
-if (__GET(_v_insert_count) < CUCKOO_NUM_INSERTS)
+if (_v_insert_count_priv < CUCKOO_NUM_INSERTS)
 {
    __GET(_v_next_task) = CUCKOO_Insert;
    //3
@@ -400,12 +406,13 @@ __TASK(8, Lookup_Search); //+lookup_done
      __GET(_v_member) = 0;
  }
 
-__GET(_v_lookup_count)++;
-uint16_t __cry = __GET(_v_member_count);
+_v_lookup_count_priv++;
+//uint16_t
+__cry = _v_member_count_priv;
 __cry += __GET(_v_member);
-__GET(_v_member_count) = __cry;
+_v_member_count_priv = __cry;
 
-if (__GET(_v_lookup_count) < CUCKOO_NUM_LOOKUPS)
+if (_v_lookup_count_priv < CUCKOO_NUM_LOOKUPS)
 {
    __GET(_v_next_task) = CUCKOO_Lookup;
    //3
