@@ -46,8 +46,7 @@ TEB(decrypt_print);     //14
 /**
  * 2. Shared variable declaration here.
  */
-__shared(
-#if (OUR2==0)   //1~25
+__shared(  //1~25
     long int p;         //1
     long int q;
     long int n;
@@ -73,33 +72,7 @@ __shared(
     long int de_k;  //59
     long int de_cnt;
     long int de_j;      
-#else       //1-2-3-6-9-10-12-13-15-20-21-5-4-8-7-14-11-16-19-17-18-22-23-24-25
-    long int p;
-    long int q;
-    long int n;
-    long int j;
-    long int e[10];
-    long int d[10];
-    long int temp[10];
-    long int en[10];
-    long int en_ct;
-    long int de_pt;
-    long int de_ct;
-    long int k;
-    long int t;         //4
-    long int flag;
-    long int i;
-    long int en_pt;
-    long int m[10];
-    long int en_key;
-    long int en_j;
-    long int en_k;
-    long int en_cnt;
-    long int de_k;
-    long int de_cnt;
-    long int de_j;
-    long int de_key;    //22
-#endif
+
 )
 
 // scalar: declaration of the buffer 
@@ -120,16 +93,7 @@ __nv long int de_j_priv;
  */
 TEB(initTask)//0
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
 
-    full_run_started = 1;
-
-#ifdef DEBUG
-    uart_sendText("Start\n\r", 7);
-    uart_sendText("\n\r", 2);
-#endif
 
     int in_p = 7;
     int in_q = 17;
@@ -147,9 +111,6 @@ TEB(initTask)//0
         __GET(m[ii]) = *(msgPt+ii);
     }
 
-#ifdef TSK_SIZ
-    cp_sendRes ("initTask \0");
-#endif
 
     NEXT(1);
 }
@@ -158,9 +119,7 @@ TEB(ce_1)//1
 //war i 
 i_priv = __GET(i);
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
+
 
     __GET(i_priv)++; // start with i=2
 
@@ -172,16 +131,11 @@ i_priv = __GET(i);
         NEXT(2);
     }
 
-#ifdef TSK_SIZ
-    cp_sendRes ("ce_1 \0");
-#endif
 }
 
 TEB(ce_2)//2
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
+
 
     if (__GET(t) % __GET(i) == 0) {
         NEXT(1);
@@ -189,16 +143,10 @@ TEB(ce_2)//2
         NEXT(3);
     }
 
-#ifdef TSK_SIZ
-    cp_sendRes ("ce_2 \0");
-#endif
 }
 
 TEB(is_i_prime)//3
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
 
     int c;
     c=sqrt16(__GET(i));
@@ -214,18 +162,13 @@ TEB(is_i_prime)//3
     }
     __GET(flag) = 1;
 
-#ifdef TSK_SIZ
-    cp_sendRes ("is_i_prime \0");
-#endif
 
     NEXT(4);
 }
 
 TEB(ce_3)//4
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
+
 
     long int in_i = __GET(i);
     if( __GET(flag) == 1 && in_i != __GET(p) && in_i != __GET(q) )
@@ -236,18 +179,12 @@ TEB(ce_3)//4
         //return;
     }
 
-#ifdef TSK_SIZ
-    cp_sendRes ("ce_3 \0");
-#endif
-
     NEXT(5);
 }
 
 TEB(cd)//5
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
+
 
     long int kk=1, __cry;
     while(1)
@@ -260,10 +197,6 @@ TEB(cd)//5
         }
     }
 
-#ifdef TSK_SIZ
-    cp_sendRes ("cd \0");
-#endif
-
     NEXT(6);
 }
 
@@ -271,9 +204,7 @@ TEB(ce_4)//6
 //war k 
 k_priv = __GET(k);
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
+
 
     int __cry = __GET(flag);
     if(__cry > 0)
@@ -290,16 +221,11 @@ k_priv = __GET(k);
         NEXT(7);
     }
 
-#ifdef TSK_SIZ
-    cp_sendRes ("ce_4 \0");
-#endif
 }
 
 TEB(encrypt_init)//7
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
+
 
   long int __cry;
    __cry = __GET(m[ __GET(en_cnt) ]) ;
@@ -310,9 +236,6 @@ TEB(encrypt_init)//7
    __cry = __GET(e[0]) ;
    __GET(en_key) = __cry;
 
-#ifdef TSK_SIZ
-    cp_sendRes ("encrypt_init \0");
-#endif
 
     NEXT(8);
 }
@@ -322,9 +245,7 @@ TEB(encrypt_inner_loop)//8
 en_k_priv = __GET(en_k);
 en_j_priv = __GET(en_j);
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
+
 
    long int __cry;
     if (__GET(en_j_priv) < __GET(en_key)) {
@@ -343,18 +264,13 @@ en_j_priv = __GET(en_j);
         NEXT(9);
     }
 
-#ifdef TSK_SIZ
-    cp_sendRes ("encrypt_inner_loop \0");
-#endif
 }
 
 TEB(encrypt_finish)//9
 //war en_cnt 
 en_cnt_priv = __GET(en_cnt);
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
+
 
    long int __cry;
    __cry = __GET(en_k);
@@ -376,28 +292,17 @@ en_cnt_priv = __GET(en_cnt);
         NEXT(10);
     }
 
-#ifdef TSK_SIZ
-    cp_sendRes ("encrypt_finish \0");
-#endif
+
 }
 
 TEB(encrypt_print)//10
 {
-#ifdef DEBUG
-    uart_sendText("THE_ENCRYPTED_MESSAGE_IS\n\r", 26);
-    for(en_cnt=0;en_cnt < MSG_LEN;en_cnt++){
-        uart_sendChar(en[en_cnt]);
-    }
-    uart_sendText("\n\r", 2);
-#endif
 
     NEXT(11);
 }
 TEB(decrypt_init)//11
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
+
 
    long int __cry;
    __GET(de_k)  = 1;
@@ -405,9 +310,6 @@ TEB(decrypt_init)//11
    __cry =__GET(d[0]);
    __GET(de_key) = __cry;
 
-#ifdef TSK_SIZ
-    cp_sendRes ("decrypt_init \0");
-#endif
 
     NEXT(12);
 }
@@ -417,9 +319,7 @@ TEB(decrypt_inner_loop)//12
 de_k_priv = __GET(de_k);
 de_j_priv = __GET(de_j);
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
+
    long int __cry;
    __cry =  __GET(temp[ __GET(de_cnt) ]);
    __GET(de_ct) = __cry;
@@ -441,9 +341,6 @@ de_j_priv = __GET(de_j);
         NEXT(13);
     }
 
-#ifdef TSK_SIZ
-    cp_sendRes ("decrypt_inner_loop \0");
-#endif
 
 }
 
@@ -453,9 +350,6 @@ de_cnt_priv = __GET(de_cnt);
 
 //long int de_cnt;
 {
-#ifdef TSK_SIZ
-    cp_reset ();
-#endif
 
    long int __cry;
    __cry = __GET(de_k) + 96;
@@ -472,9 +366,7 @@ de_cnt_priv = __GET(de_cnt);
         NEXT(14);
     }
 
-#ifdef TSK_SIZ
-    cp_sendRes ("decrypt_print \0");
-#endif
+
 }
 
 TEB(decrypt_print)//14
