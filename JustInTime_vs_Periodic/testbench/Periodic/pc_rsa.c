@@ -3,6 +3,7 @@
 #include <testbench/Periodic_scheduler.h>
 #include <testbench/testbench_api.h>
 
+/*
 __SHARED_VAR(
 uint16_t candidate_e;
 uint16_t e_number;
@@ -27,10 +28,11 @@ static __nv uint16_t  backup_buf[4] = {};
 
 static const bool backup_needed[] = {
     false, false, true, true, false, true
-};
+};*/
 
 void pc_rsa_main()
 {
+    /*
     // Local variables
     uint16_t i;
 
@@ -115,6 +117,7 @@ void pc_rsa_main()
     }
     else {
         __FINISH;
-    }
+    }*/
+    return 0;
 
 }

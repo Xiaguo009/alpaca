@@ -11,10 +11,10 @@ extern __nv uint8_t backup_error_flag;
 extern __nv uint8_t recovery_needed;
 extern __nv uint8_t system_in_lpm;
 
-//void JIT_only();
+
 void alpaca();
-void Periodic_only();
-//void Adaptive();
+//void Periodic_only();
+
 
 int main()
 {
@@ -45,7 +45,7 @@ int main()
     // TODO: run testbench
     //JIT_only();
     alpaca();
-    Periodic_only();
+    //Periodic_only();
     //Adaptive();
 }
 
@@ -57,8 +57,12 @@ void alpaca(){
      (* (alpaca_crc_main))();
      (* (alpaca_dijkstra_main))();
      (* (alpaca_ar_main))();
-     (* (alpaca_cuckoo_main))(); */
+     (* (alpaca_cuckoo_main))();
+     (* (alpaca_blowfish_main))();
+     (* (alpaca_rsa_main))();*/
      //pass test
+
+
 }
 
 void JIT_only() {

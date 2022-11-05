@@ -1,29 +1,7 @@
-#include <msp430.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
+#include <testbench/alpaca.h>
+#include <testbench/global_declaration.h>
+#include <testbench/testbench_api.h>
 
-//#include <libwispbase/wisp-base.h>
-//#include <wisp-base.h>
-#include <libalpaca/alpaca.h>
-#include <libmspbuiltins/builtins.h>
-#include <libio///LOG.h>
-#include <libmsp/mem.h>
-#include <libmsp/periph.h>
-#include <libmsp/clock.h>
-#include <libmsp/watchdog.h>
-#include <libmsp/gpio.h>
-#include <libmspmath/msp-math.h>
-
-#ifdef CONFIG_LIBEDB_PRINTF
-#include <libedb/edb.h>
-#endif
-
-#include "pins.h"
-
-// #define VERBOSE
-
-//#include "../data/keysize.h"
 
 #define KEY_SIZE_BITS    64
 #define DIGIT_BITS       8 // arithmetic ops take 8-bit args produce 16-bit result
@@ -55,25 +33,8 @@ typedef struct {
 
 #define PRINT_HEX_ASCII_COLS 8
 unsigned overflow=0;
-__attribute__((interrupt(51))) 
-void TimerB1_ISR(void){
-	TBCTL &= ~(0x0002);
-	if(TBCTL && 0x0001){
-		overflow++;
-		TBCTL |= 0x0004;
-		TBCTL |= (0x0002);
-		TBCTL &= ~(0x0001);	
-	}
-}
-__attribute__((section("__interrupt_vector_timer0_b1"),aligned(2)))
-void(*__vector_timer0_b1)(void) = TimerB1_ISR;
-// #define SHOW_PROGRESS_ON_LED
-// #define SHOW_COARSE_PROGRESS_ON_LED
 
-// Blocks are padded with these digits (on the MSD side). Padding value must be
-// chosen such that block value is less than the modulus. This is accomplished
-// by any value below 0x80, because the modulus is restricted to be above
-// 0x80 (see comments below).
+
 static const uint8_t PAD_DIGITS[] = { 0x01 };
 #define NUM_PAD_DIGITS (sizeof(PAD_DIGITS) / sizeof(PAD_DIGITS[0]))
 
@@ -141,24 +102,13 @@ void task_init()
 	int i;
 	unsigned message_length = sizeof(PLAINTEXT) - 1; // skip the terminating null byte
 
-	//LOG("init\r\n");
-	//LOG("digit: %u\r\n", sizeof(digit_t));
-	//LOG("unsigned: %u\r\n",sizeof(unsigned));
-
-	//LOG("init: out modulus\r\n");
-
-	// TODO: consider passing pubkey as a structure type
 	for (i = 0; i < NUM_DIGITS; ++i) {
 		GV(modulus, i) = pubkey.n[i];
 	}
 
-	//LOG("init: out exp\r\n");
-
 	GV(message_length) = message_length;
 	GV(block_offset) = 0;
 	GV(cyphertext_len) = 0;
-
-	//LOG("init: done\r\n");
 
 	TRANSITION_TO(task_pad);
 }
@@ -167,22 +117,11 @@ void task_pad()
 {
 	int i;
 
-	//LOG("pad: len=%u offset=%u\r\n", GV(message_length), GV(block_offset));
-
 	if (GV(block_offset) >= GV(message_length)) {
-		//LOG("pad: message done\r\n");
 		TRANSITION_TO(task_print_cyphertext);
 	}
 
-	//LOG("process block: padded block at offset=%u: ", GV(block_offset));
-	for (i = 0; i < NUM_PAD_DIGITS; ++i)
-		//LOG("%x ", PAD_DIGITS[i]);
-	//LOG("'");
-	for (i = NUM_DIGITS - NUM_PAD_DIGITS - 1; i >= 0; --i)
-		//LOG("%x ", PLAINTEXT[GV(block_offset) + i]);
-	//LOG("\r\n");
 
-	digit_t zero = 0;
 	for (i = 0; i < NUM_DIGITS - NUM_PAD_DIGITS; ++i) {
 		GV(base, i) = (GV(block_offset) + i < GV(message_length)) ? PLAINTEXT[GV(block_offset) + i] : 0xFF;
 	}
@@ -193,7 +132,7 @@ void task_pad()
 	for (i = 1; i < NUM_DIGITS; ++i)
 		GV(block, i) = 0;
 
-	//GV(exponent_next) = GV(exponent);
+
 	GV(exponent) = pubkey.e;
 
 	GV(block_offset) += NUM_DIGITS - NUM_PAD_DIGITS;
@@ -203,10 +142,6 @@ void task_pad()
 
 void task_exp()
 {
-	//LOG("exp: e=%x\r\n", GV(exponent));
-
-	// ASSERT: e > 0
-
 
 	if (GV(exponent) & 0x1) {
 		GV(exponent) >>= 1;
@@ -221,9 +156,7 @@ void task_exp()
 // be rolled into task_exp?
 void task_mult_block()
 {
-	//LOG("mult block\r\n");
 
-	// TODO: pass args to mult: message * base
 	GV(next_task) = TASK_REF(task_mult_block_get_result);
 	TRANSITION_TO(task_mult_mod);
 }
@@ -232,19 +165,14 @@ void task_mult_block_get_result()
 {
 	int i;
 
-	//LOG("mult block get result: block: ");
+
 	for (i = NUM_DIGITS - 1; i >= 0; --i) { // reverse for printing
 		GV(block, i) = GV(product, i);
-		//LOG("%x ", GV(product, i));
 	}
-	//LOG("\r\n");
 
-	// On last iteration we don't need to square base
 	if (GV(exponent) > 0) {
 
-		// TODO: current implementation restricts us to send only to the next instantiation
-		// of self, so for now, as a workaround, we proxy the value in every instantiation
-
+	
 		TRANSITION_TO(task_square_base);
 
 	} else { // block is finished, save it
@@ -252,19 +180,12 @@ void task_mult_block_get_result()
 
 		if (GV(cyphertext_len) + NUM_DIGITS <= CYPHERTEXT_SIZE) {
 
-			for (i = 0; i < NUM_DIGITS; ++i) { // reverse for printing
-				// TODO: we could save this read by rolling this loop into the
-				// above loop, by paying with an extra conditional in the
-				// above-loop.
+			for (i = 0; i < NUM_DIGITS; ++i) {
 				GV(cyphertext, _global_cyphertext_len) = GV(product, i);
 				++GV(cyphertext_len);
 			}
 
-		} else {
-			//printf("WARN: block dropped: cyphertext overlow [%u > %u]\r\n",
-					//GV(cyphertext_len) + NUM_DIGITS, CYPHERTEXT_SIZE);
-			// carry on encoding, though
-		}
+		} 
 
 		// TODO: implementation limitation: cannot multicast and send to self
 		// in the same macro

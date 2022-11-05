@@ -151,12 +151,12 @@ extern const uint8_t adj_matrix[DIJKSTRA_NNODES][DIJKSTRA_NNODES];
 
 // ==================================================== RSA  ===================================================== //
 
-extern const uint16_t rsa_msg[38];
+//extern const uint16_t rsa_msg[38];
 
-extern const uint16_t p;
-extern const uint16_t q;
+//extern const uint16_t p;
+//extern const uint16_t q;
 
-#define RSA_MSGLENGTH    (30)
+//#define RSA_MSGLENGTH    (30)
 
 extern uint16_t RSA_PowerMod(uint16_t a, uint16_t b, uint16_t mod);
 extern uint16_t RSA_Sqrt16(uint16_t x);
