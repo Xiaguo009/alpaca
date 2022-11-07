@@ -43,45 +43,24 @@ int main()
     if (task_success_flag == true) { /* TODO: do something after success. */ }
 
     // TODO: run testbench
-    //JIT_only();
-    alpaca();
-    //Periodic_only();
+    Alpaca_only();
+    Periodic_only();
     //Adaptive();
 }
 
-//
-void alpaca(){
-     //(* (alpaca_sort_main))();
-     /*(* (alpaca_bc_main))();
-     (* (alpaca_cem_main))();
-     (* (alpaca_crc_main))();
-     (* (alpaca_dijkstra_main))();
-     (* (alpaca_ar_main))();
-     (* (alpaca_cuckoo_main))();
-     (* (alpaca_blowfish_main))();
-     (* (alpaca_rsa_main))();*/
-     //pass test
 
-
-}
-
-void JIT_only() {
-    adc_start;                              // Start ADC and its Timer A
-    JIT_SYSTEM_INTO_SLEEP;                  // System Enter LPM1.
-    backup_error_flag = true;               // Backup not available
-
+void Alpaca_only() {
     do {
-        current_testbench = 0;
-        while (current_testbench < TESTBENCH_LIST_SIZE) {
-            jit_run_testbench(current_testbench);
-            current_testbench++;
+        while (state != TESTBENCH_FINISH) {
+            alpaca_run_testbench(current_testbench, &state);
         }
+        current_testbench++;
+        if (current_testbench >= TESTBENCH_LIST_SIZE) {current_testbench = 0;return;}
+        state = TESTBENCH_READY;
     } while (1);
 
     // task_success_flag = 1;
-    // adc_stop;
 }
-
 
 void Periodic_only() {
     do {
@@ -89,7 +68,7 @@ void Periodic_only() {
             periodic_run_testbench(current_testbench, &state);
         }
         current_testbench++;
-        if (current_testbench >= TESTBENCH_LIST_SIZE) current_testbench = 0;
+        if (current_testbench >= TESTBENCH_LIST_SIZE) {current_testbench = 0;return;} //end condition
         state = TESTBENCH_READY;
     } while (1);
 

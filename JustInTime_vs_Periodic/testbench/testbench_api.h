@@ -14,6 +14,7 @@ void jit_sort_main();
 
 void pc_ar_main();
 void pc_bc_main();
+void pc_blowfish_main();
 void pc_cem_main();
 void pc_crc_main();
 void pc_cuckoo_main();

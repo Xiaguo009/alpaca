@@ -2,10 +2,10 @@
 #include <testbench/global_declaration.h>
 #include <testbench/testbench_api.h>
 
-// #define MSG "hello"
-// #define MSG_LEN 5
+#define MSG "hello"
+#define MSG_LEN 5
 
-// char * msgPt = MSG;
+char * msgPt = MSG;
 
 static __nv uint16_t  status = 0;  //cur_task->id
 

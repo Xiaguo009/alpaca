@@ -163,6 +163,13 @@ extern uint16_t RSA_Sqrt16(uint16_t x);
 extern uint16_t RSA_ModInv(uint16_t u, uint16_t v);
 extern uint8_t RSA_isPrime(uint16_t x, uint16_t sqrt_x);
 
+//new
+#define MSG "hello"
+#define MSG_LEN 5
+
+extern const char * msgPt;
+
+
 // ==================================================== SORT  ===================================================== //
 
 #define SORT_LENGTH  100

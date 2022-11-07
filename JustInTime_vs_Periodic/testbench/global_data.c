@@ -9,6 +9,8 @@ const cuckoo_value_t cuckoo_init_key = 0x0001;
 const uint16_t rsa_msg[38] = {'A', 'b', 'o', 's', 'o', 'm', 'f', 'r', 'i', 'e', 'n', 'd', 'a', 'f', 'a',
                             'r', 'b', 'r', 'i', 'n', 'g', 's', 'a', 'd', 'i', 's', 't', 'a', 'n', 't',
                             'l', 'a', 'n', 'd', 'n', 'e', 'a', 'r'};
+//new
+const char * msgPt = MSG;
 
 //const uint16_t p = 11, q = 13;
 

@@ -28,7 +28,7 @@ enum {
 };
 
 
-#define TESTBENCH_LIST_SIZE     8
+#define TESTBENCH_LIST_SIZE     9//8
 
 const uint8_t status_code[TESTBENCH_LIST_SIZE][2] = {
     {0, 15}, {51, 60}, {85, 90}, {102, 105},
@@ -41,8 +41,13 @@ const FUNCPTR JIT_func[TESTBENCH_LIST_SIZE] = {
 };
 
 const FUNCPTR PC_func[TESTBENCH_LIST_SIZE] = {
-    pc_ar_main, pc_bc_main, pc_cem_main, pc_crc_main,
+    pc_ar_main, pc_bc_main, pc_blowfish_main,pc_cem_main, pc_crc_main,
     pc_cuckoo_main, pc_dijkstra_main, pc_rsa_main, pc_sort_main
+}; //pc_blowfish_main
+
+const FUNCPTR ALPACA_func[TESTBENCH_LIST_SIZE] = {
+    alpaca_ar_main, alpaca_bc_main, alpaca_blowfish_main ,alpaca_cem_main, alpaca_crc_main,
+    alpaca_cuckoo_main, alpaca_dijkstra_main, alpaca_rsa_main, alpaca_sort_main
 };
 
 
@@ -56,6 +61,26 @@ inline void jit_run_testbench(uint16_t tbid) {
 #endif
 }
 
+inline void alpaca_run_testbench(uint16_t tbid, uint16_t* state) {
+    switch(*state) {
+    case TESTBENCH_READY:
+        *state = TESTBENCH_RUNNING;
+#if SEND_SINGNAL_AT_START_AND_END
+        EUSCI_A_UART_transmitData(UART_BASEADDR, status_code[tbid][0]);
+#endif
+        /* NO BREAK */
+    case TESTBENCH_RUNNING:
+        (* (ALPACA_func[tbid]))(); //call bench_main()
+        *state = TESTBENCH_FINISH;
+#if SEND_SINGNAL_AT_START_AND_END
+        EUSCI_A_UART_transmitData(UART_BASEADDR, status_code[tbid][1]);
+#endif
+        /* NO BREAK */
+    case TESTBENCH_FINISH:
+        return;
+    }
+}
+
 inline void periodic_run_testbench(uint16_t tbid, uint16_t* state) {
     switch(*state) {
     case TESTBENCH_READY:
@@ -65,7 +90,7 @@ inline void periodic_run_testbench(uint16_t tbid, uint16_t* state) {
 #endif
         /* NO BREAK */
     case TESTBENCH_RUNNING:
-        (* (PC_func[tbid]))(); //into bench_main
+        (* (PC_func[tbid]))();
         *state = TESTBENCH_FINISH;
 #if SEND_SINGNAL_AT_START_AND_END
         EUSCI_A_UART_transmitData(UART_BASEADDR, status_code[tbid][1]);

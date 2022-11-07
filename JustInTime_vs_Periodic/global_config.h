@@ -11,7 +11,7 @@
 // ===================== GLOBAL CONFIG ===================== //
 
 
-#define PC_BACKUP_MODE      BACKUP_WITH_DMA
+#define PC_BACKUP_MODE      BACKUP_WITH_CPU
 #define JIT_BACKUP_MODE     BACKUP_WITH_DMA
 
 #define VOLT_MONITOR_INTERVAL       200
