@@ -31,9 +31,25 @@ void power_on_init()
 void clock_sys_init()
 {
 
+#if WORKING_FREQUENCY_IN_MHZ == 1
     CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_0);                              // DCO in 1MHz
     CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // MCLK = DCO = 1MHz
     CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // SMCLK = DCO = 1MHz
+#elif WORKING_FREQUENCY_IN_MHZ == 2
+    CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_3);                              // DCO in 4MHz
+    CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_2);  // MCLK = DCO/2 = 2MHz
+    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_2);  // SMCLK = DCO/2 = 2MHz
+#elif WORKING_FREQUENCY_IN_MHZ == 4
+    CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_3);                              // DCO in 4MHz
+    CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // MCLK = DCO = 4MHz
+    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // SMCLK = DCO = 4MHz
+#elif WORKING_FREQUENCY_IN_MHZ == 8
+    CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_6);                              // DCO in 8MHz
+    CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // MCLK = DCO = 8MHz
+    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // SMCLK = DCO = 8MHz
+#else
+#error "WORKING FREQUENCY ILLEGAL!"
+#endif
 
     CS_initClockSignal(CS_ACLK,   CS_VLOCLK_SELECT,   CS_CLOCK_DIVIDER_1);
     CS_turnOffLFXT();

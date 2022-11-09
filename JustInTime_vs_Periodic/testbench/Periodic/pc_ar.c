@@ -37,7 +37,7 @@ static const uint16_t global_war_size = 10;
 static __nv uint16_t  backup_buf[10] = {};
 
 static const bool backup_needed[] = {
-    false, true, true, false, false, false, true, true, true
+    false, true, true, false, false, false, true, true, true  //_v_window in 3?
 };
 
 void pc_ar_main()

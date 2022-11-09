@@ -1,5 +1,6 @@
 
 #include <main.hpp>
+#include <stdio.h>
 
 __nv uint8_t task_success_flag = false;
 __nv uint8_t running_flag = 0;
@@ -13,7 +14,7 @@ extern __nv uint8_t system_in_lpm;
 
 
 void alpaca();
-//void Periodic_only();
+void Periodic_only();
 
 
 int main()
@@ -25,6 +26,7 @@ int main()
     clock_sys_init();
     dma_init();
     uart2target_init();
+    timer_init();
 
     if (running_flag == 0) {
         turn_on_green_led;
@@ -50,10 +52,14 @@ int main()
 
 
 void Alpaca_only() {
+    uint16_t s, f;
     do {
         while (state != TESTBENCH_FINISH) {
+            timer_start_count(&s);
             alpaca_run_testbench(current_testbench, &state);
+            timer_end_count(&f);
         }
+        printf("Cycles %ld.", timer_get_cycles(s, f));
         current_testbench++;
         if (current_testbench >= TESTBENCH_LIST_SIZE) {current_testbench = 0;return;}
         state = TESTBENCH_READY;

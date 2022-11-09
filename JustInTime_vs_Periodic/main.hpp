@@ -10,6 +10,7 @@
 #include <driver/target.h>
 #include <driver/uart2target.h>
 #include <driver/volt_monit.h>
+#include <driver/time_meas.h>
 #include <testbench/testbench_api.h>
 #include <global_config.h>
 #include <stdint.h>
