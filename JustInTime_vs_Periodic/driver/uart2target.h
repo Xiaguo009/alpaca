@@ -12,10 +12,10 @@
 #define INT2STR_BUFLEN 20
 
 #if defined(__MSP430FR5994__)
-    #define UART_TX_PORT            GPIO_PORT_P6
+    #define UART_TX_PORT            GPIO_PORT_P2
     #define UART_TX_PIN             GPIO_PIN0
     #define UART_TX_FUNCTION        GPIO_PRIMARY_MODULE_FUNCTION
-    #define UART_BASEADDR           EUSCI_A3_BASE
+    #define UART_BASEADDR           EUSCI_A0_BASE
 #elif defined(__MSP430FR5969__)
     #define UART_TX_PORT            GPIO_PORT_P2
     #define UART_TX_PIN             GPIO_PIN5
