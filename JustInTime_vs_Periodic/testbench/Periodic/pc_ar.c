@@ -16,12 +16,14 @@ uint16_t        _v_stationaryCount;
 uint16_t        _v_discardedSamplesCount;
 uint16_t        _v_trainingSetSize;
 
+accelReading    _v_window[AR_ACCEL_WINDOW_SIZE]; //war of latics in task3
+
 ar_class_t      _v_class;
 ar_run_mode_t   _v_mode;
 ar_features_t   _v_features;
 uint16_t        _v_meanmag;
 uint16_t        _v_stddevmag;
-accelReading    _v_window[AR_ACCEL_WINDOW_SIZE];
+
 ar_features_t   _v_model_stationary[AR_MODEL_SIZE];
 ar_features_t   _v_model_moving[AR_MODEL_SIZE];
 
@@ -33,12 +35,12 @@ uint16_t        sum[4];
 
 static __nv bool      first_run = 1;
 static __nv uint16_t  status = 0;
-static const uint16_t global_war_size = 10;
-static __nv uint16_t  backup_buf[10] = {};
+static const uint16_t global_war_size = 16; //10+3*8*AR_ACCEL_WINDOW_SIZE/16
+static __nv uint16_t  backup_buf[16] = {};
 
 static const bool backup_needed[] = {
-    false, true, true, false, false, false, true, true, true  //_v_window in 3?
-};
+    false, true, true, true, false, false, true, true, true  //_v_window in 3?
+}; //change the backup bit of task3 to 1
 
 void pc_ar_main()
 {

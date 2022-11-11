@@ -29,10 +29,10 @@ static __nv uint16_t  status = 0;
 static const uint16_t global_war_size = 6;
 static __nv uint16_t  backup_buf[6] = {};
 
-
 static const bool backup_needed[] = {
-    false, false, true, true, true, true, true, true
-};
+    false, false, true, true, false, true, true, true, true, true
+} //backup-needed task: 2 3 5 6 7 8 9
+;
 
 void pc_cem_main()
 {
@@ -63,15 +63,19 @@ void pc_cem_main()
     PREPARE_FOR_BACKUP;
 
     switch(__GET_CURTASK) {
-    case 0: goto init;
-    case 1: goto Dict_Init;
-    case 2: goto Sample;
-    case 3: goto Measure_Temp;
-    case 4: goto Letterize_and_compress;
-    case 5: goto Find_Sibling;
-    case 6: goto Add_Node;
-    case 7: goto Add_Insert;
-    }
+
+    case 0: goto  init;//               false);
+    case 1: goto  Dict_Init;//          false);
+    case 2: goto  Sample;//             true );
+    case 3: goto  Measure_Temp;//       true );
+    case 4: goto  Letterize;//          false); 
+    case 5: goto  Compress;//           true );
+    case 6: goto  Find_Sibling;//       true );
+    case 7: goto  Add_Node;//           true );
+    case 8: goto  Add_Insert;//         true );
+    case 9: goto  AppendCompressed;//   true ); 
+
+}
 
     // Tasks
     // =================================================================
@@ -116,7 +120,7 @@ void pc_cem_main()
     else
     {
        __GET(_v_letter_idx) = next_letter_idx;
-       __NEXT(4, Letterize_and_compress);
+       __NEXT(4, Letterize);
     }
 
     // =================================================================
@@ -127,10 +131,10 @@ void pc_cem_main()
     __GET(_v_prev_sample) = prev_sample;
     __GET(_v_sample) = sample;
 
-    __NEXT(4, Letterize_and_compress);
+    __NEXT(4, Letterize);
 
     // =================================================================
-    __BUILDIN_TASK_BOUNDARY(4, Letterize_and_compress);
+    __BUILDIN_TASK_BOUNDARY(4, Letterize);
     letter_idx = __GET(_v_letter_idx);
     if (letter_idx == 0)
        letter_idx = CEM_NUM_LETTERS_IN_SAMPLE;
@@ -141,6 +145,11 @@ void pc_cem_main()
     letter = (__GET(_v_sample) & (CEM_LETTER_MASK << letter_shift) ) >> letter_shift;
     __GET(_v_letter) = letter;
 
+    __NEXT(5, Compress);
+
+    // =================================================================
+   __BUILDIN_TASK_BOUNDARY(5, Compress);
+
     parent = __GET(_v_parent_next);
     __GET(_v_parent_node.letter) = __GET(_v_dict[parent].letter);
     __GET(_v_parent_node.sibling) = __GET(_v_dict[parent].sibling);
@@ -150,20 +159,20 @@ void pc_cem_main()
     __GET(_v_child) = __GET(_v_dict[parent].child);
     __GET(_v_sample_count)++;
 
-    __NEXT(5, Find_Sibling);
+    __NEXT(6, Find_Sibling);
 
     // =================================================================
-    __BUILDIN_TASK_BOUNDARY(5, Find_Sibling);
+    __BUILDIN_TASK_BOUNDARY(6, Find_Sibling);
     if (__GET(_v_sibling) != CEM_NIL) {
        idx = __GET(_v_sibling);
        if(__GET(_v_dict[idx].letter) == __GET(_v_letter)) {
            __GET(_v_parent_next) = __GET(_v_sibling);
-           __NEXT(4, Letterize_and_compress);
+           __NEXT(4, Letterize);
        }
        else {
            if (__GET(_v_dict[idx].sibling) != 0) {
                __GET(_v_sibling) = __GET(_v_dict[idx].sibling);
-               __NEXT(5, Find_Sibling);
+               __NEXT(6, Find_Sibling);
            }
        }
     }
@@ -171,31 +180,31 @@ void pc_cem_main()
     starting_node_idx = (cem_index_t)__GET(_v_letter);
     __GET(_v_parent_next) = starting_node_idx;
     if (__GET(_v_child) == CEM_NIL) {
-       __NEXT(7, Add_Insert);
+       __NEXT(8, Add_Insert);
     }
     else {
-        __NEXT(6, Add_Node);
+        __NEXT(7, Add_Node);
     }
 
     // =================================================================
-    __BUILDIN_TASK_BOUNDARY(6, Add_Node);
+    __BUILDIN_TASK_BOUNDARY(7, Add_Node);
     i = __GET(_v_sibling);
     if (__GET(_v_dict[i].sibling) != CEM_NIL)
     {
        next_sibling = __GET(_v_dict[i].sibling);
        __GET(_v_sibling) = next_sibling;
-       __NEXT(6, Add_Node);
+       __NEXT(7, Add_Node);
     }
     else
     {
        __GET(_v_sibling_node.letter) = __GET(_v_dict[i].letter);
        __GET(_v_sibling_node.sibling) = __GET(_v_dict[i].sibling);
        __GET(_v_sibling_node.child) = __GET(_v_dict[i].child);
-       __NEXT(7, Add_Insert);
+       __NEXT(8, Add_Insert);
     }
 
     // =================================================================
-    __BUILDIN_TASK_BOUNDARY(7, Add_Insert);
+    __BUILDIN_TASK_BOUNDARY(8, Add_Insert);
     if (__GET(_v_node_count) == CEM_DICT_SIZE)
        while(1){}
 
@@ -220,6 +229,11 @@ void pc_cem_main()
     __GET(_v_dict[child].child) = CEM_NIL;
     __GET(_v_symbol) = __GET(_v_parent);
     __GET(_v_node_count)++;
+
+    __NEXT(9, AppendCompressed);
+
+    // =================================================================
+    __BUILDIN_TASK_BOUNDARY(9, AppendCompressed);
 
     __GET(_v_compressed_data[__GET(_v_out_len)].letter) = __GET(_v_symbol);
     __GET(_v_out_len)++;

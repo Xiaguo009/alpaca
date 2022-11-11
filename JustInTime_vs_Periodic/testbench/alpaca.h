@@ -56,8 +56,10 @@ void commit();
 #define __TASK(id, name) \
     name:                \
     ++_numBoots;         \
-    __COMMIT;   //inline?             
-    //status |= 0xF000  //?
+    __COMMIT;            \
+    ++task_count //for testing
+    //printf("id: %d. task count: %d. \n",id,++task_count); //     \
+
 
 #define __TRANSITION_TO(id, name) \
     needCommit = 1;                             \

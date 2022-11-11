@@ -47,14 +47,15 @@
 
 #define __GET(item) __persistent_vars.item
 
-#define __BUILDIN_TASK_BOUNDARY(id, name) \
-    name: \
-    if (backup_needed[__GET_CURTASK] == true && !__IS_TASK_RUNNING) { \
-        BUILDIN_BACKUP; \
-    } \
-    status |= 0xF000
-
-
+#define __BUILDIN_TASK_BOUNDARY(id, name)                           \
+    name:                                                           \
+    if (backup_needed[__GET_CURTASK] == true && !__IS_TASK_RUNNING) \
+    {                                                               \
+        BUILDIN_BACKUP;                                             \
+    }                                                               \
+    status |= 0xF000;  \
+    ++task_count
+    //printf("id: %d. task count: %d. \n",id,++task_count);   \
 
 
 #endif /* TESTBENCH_PERIODIC_SCHEDULER_H_ */

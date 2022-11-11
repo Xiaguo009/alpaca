@@ -42,6 +42,8 @@ uint8_t* int2str(uint16_t val) {
     return &(int2str_buf[x]);
 }
 
+/*
+
 int fputc(int _c, register FILE *_fp)
 {
   EUSCI_A_UART_transmitData(UART_BASEADDR, (unsigned char) _c );
@@ -62,3 +64,4 @@ int fputs(const char *_ptr, register FILE *_fp)
   return len;
 }
 
+*/

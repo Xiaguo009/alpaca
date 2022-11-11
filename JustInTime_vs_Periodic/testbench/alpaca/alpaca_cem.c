@@ -49,12 +49,12 @@ switch(__GET_CURTASK) {
     case 1: goto  Dict_Init;//          false);
     case 2: goto  Sample;//             true );
     case 3: goto  Measure_Temp;//       true );
-    case 4: goto  Letterize;//          false);
+    case 4: goto  Letterize;//          false); 
     case 5: goto  Compress;//           true );
     case 6: goto  Find_Sibling;//       true );
     case 7: goto  Add_Node;//           true );
     case 8: goto  Add_Insert;//         true );
-    case 9: goto  AppendCompressed;//   true );
+    case 9: goto  AppendCompressed;//   true ); 
 
 }
 
@@ -78,7 +78,7 @@ __TASK(1, Dict_Init);
     //1.
     //_v_letter_priv = __GET(_v_letter);//193
 
-for (uint16_t i = 0; i < CEM_NUM_LETTERS; ++i)
+for (uint16_t i = 0; i < CEM_NUM_LETTERS; ++i) //i will be released after for-loop
 {
    __GET(_v_dict[i].letter) = i;
    __GET(_v_dict[i].sibling) = CEM_NIL;
@@ -96,19 +96,7 @@ __TRANSITION_TO( 2,Sample);
 
 __TASK(2, Sample);
 // 1.
-_v_letter_priv = __GET(_v_letter);//193 //
- //_v_letter_idx_priv = __GET(_v_letter);  //194
-
- //_v_prev_sample_priv = __GET(_v_prev_sample);//195
-
- //_v_out_len_priv = __GET(_v_out_len);//196
-
- //_v_node_count_priv = __GET(_v_node_count);
-
- //_v_sample_priv = __GET(_v_sample);//198
-
- //_v_sample_count_priv = __GET(_v_sample_count);//199
- 
+_v_letter_priv = __GET(_v_letter);//193 
 
 uint16_t next_letter_idx = _v_letter_priv + 1;
 if (next_letter_idx == CEM_NUM_LETTERS_IN_SAMPLE)
@@ -118,22 +106,14 @@ if (_v_letter_priv == 0)
 {
    _v_letter_priv = next_letter_idx;
 
-       //3    
-       write_to_gbuf(&_v_letter_priv, &_v_letter, sizeof(_v_letter));
-       //write_to_gbuf(&_v_letter_idx_priv, &_v_letter, sizeof(_v_letter));
-       //write_to_gbuf(&_v_prev_sample_priv, &_v_prev_sample, sizeof(_v_prev_sample));
-       //write_to_gbuf(&_v_out_len_priv, &_v_out_len, sizeof(_v_out_len));
-       //write_to_gbuf(&_v_node_count_priv, &_v_node_count, sizeof(_v_node_count));
-       //write_to_gbuf(&_v_sample_priv, &_v_sample, sizeof(_v_sample));
-       //write_to_gbuf(&_v_sample_count_priv, &_v_sample_count, sizeof(_v_sample_count));
-       __TRANSITION_TO(3, Measure_Temp);
+   write_to_gbuf(&_v_letter_priv, &_v_letter, sizeof(_v_letter));
+   __TRANSITION_TO(3, Measure_Temp);
 }
 else
 {
     _v_letter_priv = next_letter_idx;
    //3    
    write_to_gbuf(&_v_letter_priv, &_v_letter, sizeof(_v_letter));
-
    __TRANSITION_TO( 4,Letterize);
 }
 
@@ -174,7 +154,7 @@ __TRANSITION_TO(5, Compress);
 __TASK(5, Compress);
 
     //1.
-    _v_sample_count_priv = __GET(_v_sample_count);//199
+_v_sample_count_priv = __GET(_v_sample_count); // 199
 
 cem_index_t parent = __GET(_v_parent_next);
 __GET(_v_parent_node.letter) = __GET(_v_dict[parent].letter);
@@ -236,21 +216,25 @@ else {
 }
 
 
-__TASK(7, Add_Node);
+__TASK(7, Add_Node); 
+//war _v_sibling
+_v_sibling_priv = __GET(_v_sibling);
 
-uint16_t i = __GET(_v_sibling);
+uint16_t i = _v_sibling_priv;
 if (__GET(_v_dict[i].sibling) != CEM_NIL)
 {
    cem_index_t next_sibling = __GET(_v_dict[i].sibling);
-   __GET(_v_sibling) = next_sibling;
-   __TRANSITION_TO(7,Add_Node);
+   _v_sibling_priv = next_sibling;
+   write_to_gbuf(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
+   __TRANSITION_TO(7, Add_Node);
 }
 else
 {
    __GET(_v_sibling_node.letter) = __GET(_v_dict[i].letter);
    __GET(_v_sibling_node.sibling) = __GET(_v_dict[i].sibling);
    __GET(_v_sibling_node.child) = __GET(_v_dict[i].child);
-   __TRANSITION_TO(8,Add_Insert);
+   write_to_gbuf(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
+   __TRANSITION_TO(8, Add_Insert);
 }
 
 
@@ -266,7 +250,7 @@ if (_v_node_count_priv == CEM_DICT_SIZE)
 cem_index_t child = _v_node_count_priv;
 if (__GET(_v_parent_node.child) == CEM_NIL)
 {
-   int16_t i = __GET(_v_parent);
+    i = __GET(_v_parent);
    __GET(_v_dict[i].letter) = __GET(_v_parent_node.letter);
    __GET(_v_dict[i].sibling) = __GET(_v_parent_node.sibling);
    __GET(_v_dict[i].child) = child;

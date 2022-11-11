@@ -12,6 +12,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>//for printf
+
+//count
+extern uint32_t task_count;
 
 
 // ====================================================  AR  ==================================================== //

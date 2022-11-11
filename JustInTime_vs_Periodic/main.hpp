@@ -52,15 +52,6 @@ const FUNCPTR ALPACA_func[TESTBENCH_LIST_SIZE] = {
 };
 
 
-inline void jit_run_testbench(uint16_t tbid) {
-#if SEND_SINGNAL_AT_START_AND_END
-    EUSCI_A_UART_transmitData(UART_BASEADDR, status_code[tbid][0]);
-#endif
-    (* (JIT_func[tbid]))();
-#if SEND_SINGNAL_AT_START_AND_END
-    EUSCI_A_UART_transmitData(UART_BASEADDR, status_code[tbid][1]);
-#endif
-}
 
 inline void alpaca_run_testbench(uint16_t tbid, uint16_t* state) {
     switch(*state) {
