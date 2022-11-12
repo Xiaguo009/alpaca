@@ -81,7 +81,7 @@ return 2;
 
 __TASK(2, Sample,
     //1.
-_v_letter_priv = __GET(_v_letter);//193 //
+_v_letter_priv = __GET(_v_letter);//193 //->_v_letter_idx_priv
  //_v_letter_idx_priv = __GET(_v_letter);  //194
 
  //_v_prev_sample_priv = __GET(_v_prev_sample);//195

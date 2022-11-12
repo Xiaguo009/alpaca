@@ -13,8 +13,8 @@ extern __nv uint8_t backup_error_flag;
 extern __nv uint8_t recovery_needed;
 extern __nv uint8_t system_in_lpm;
 
-//just for test
-volatile uint32_t task_count = 0;
+//just for test.
+uint32_t task_count = 0; //need to be repaired.
 
 void alpaca();
 void Periodic_only();
@@ -46,9 +46,6 @@ int main()
     }
 
     if (task_success_flag == true) { /* TODO: do something after success. */ }
-
-    //(*(pc_cem_main))();
-    //(*(alpaca_cem_main))();
 
     // TODO: run testbench
     Alpaca_only();

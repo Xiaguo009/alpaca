@@ -55,7 +55,9 @@
     }                                                               \
     status |= 0xF000;  \
     ++task_count
-    //printf("id: %d. task count: %d. \n",id,++task_count);   \
+    //printf("id: %d. task count: %d. \n",id,++task_count)
+    
+    
 
 
 #endif /* TESTBENCH_PERIODIC_SCHEDULER_H_ */

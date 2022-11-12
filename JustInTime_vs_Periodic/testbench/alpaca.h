@@ -58,7 +58,8 @@ void commit();
     ++_numBoots;         \
     __COMMIT;            \
     ++task_count //for testing
-    //printf("id: %d. task count: %d. \n",id,++task_count); //     \
+    //printf("id: %d. task count: %d. \n",id,++task_count)
+    
 
 
 #define __TRANSITION_TO(id, name) \

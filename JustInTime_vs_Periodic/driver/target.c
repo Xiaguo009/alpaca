@@ -46,7 +46,8 @@ void clock_sys_init()
 #elif WORKING_FREQUENCY_IN_MHZ == 8
     CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_6);                              // DCO in 8MHz
     CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // MCLK = DCO = 8MHz
-    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // SMCLK = DCO = 8MHz
+    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_8);  // SMCLK = DCO/8 = 1MHz, x8 divided DCO
+    CS_initClockSignal(CS_ACLK,   CS_VLOCLK_SELECT,   CS_CLOCK_DIVIDER_1);
 #else
 #error "WORKING FREQUENCY ILLEGAL!"
 #endif
