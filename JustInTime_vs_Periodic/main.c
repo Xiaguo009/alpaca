@@ -47,13 +47,24 @@ int main()
 
     if (task_success_flag == true) { /* TODO: do something after success. */ }
 
+    FILE* fp;
+    if ( (fp = fopen("bench_all.csv", "a")) == NULL ) {
+    //if ( (fp = fopen("alpaca_bench_all.csv", "w+")) == NULL ) {
+        puts("Fail to open file!");
+        exit(0);
+    }
+    fprintf(fp, "project,bench_id,time_cycles,task_sum\n");
+
+
     // TODO: run testbench
-    Alpaca_only();
-    //Periodic_only();
+    Alpaca_only(fp);
+    //Periodic_only(fp);
+
+    fclose(fp);
 }
 
 
-void Alpaca_only() {
+void Alpaca_only(FILE* fp) {
     uint16_t s, f;
     do {
         while (state != TESTBENCH_FINISH) {
@@ -61,9 +72,10 @@ void Alpaca_only() {
             alpaca_run_testbench(current_testbench, &state);
             timer_end_count(&f);
         }
-        printf("current testbench: %d.Cycles: %ld.", current_testbench, timer_get_cycles(s, f));
+        fprintf(fp, "alpaca,%d, %ld, %d\n", current_testbench,timer_get_cycles(s, f),task_count);
+        //printf("current testbench: %d.Cycles: %ld.", current_testbench,);
         current_testbench++;
-        printf("the total number of tasks: %d.\n", task_count);
+        //printf("the total number of tasks: %d.\n", task_count);
         task_count = 0; // count
 
         if (current_testbench >= TESTBENCH_LIST_SIZE) {current_testbench = 0;return;}
@@ -73,7 +85,7 @@ void Alpaca_only() {
     // task_success_flag = 1;
 }
 
-void Periodic_only() {
+void Periodic_only(FILE* fp) {
     uint16_t a, b;
     do {
         while (state != TESTBENCH_FINISH) {
@@ -81,9 +93,11 @@ void Periodic_only() {
             periodic_run_testbench(current_testbench, &state);
             timer_end_count(&b);
         }
-        printf("current testbench: %d.Cycles: %ld.", current_testbench, timer_get_cycles(a, b));
+        fprintf(fp, "latics,%d, %ld, %d\n", current_testbench,timer_get_cycles(a, b),task_count);
+
+        //printf("current testbench: %d.Cycles: %ld.", current_testbench, timer_get_cycles(a, b));
         current_testbench++;
-        printf("the total number of tasks: %d.\n", task_count);
+        //printf("the total number of tasks: %d.\n", task_count);
         task_count = 0; // count
 
         if (current_testbench >= TESTBENCH_LIST_SIZE) {current_testbench = 0;return;} //end condition

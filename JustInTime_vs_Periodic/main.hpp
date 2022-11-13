@@ -81,7 +81,7 @@ inline void periodic_run_testbench(uint16_t tbid, uint16_t* state) {
         EUSCI_A_UART_transmitData(UART_BASEADDR, status_code[tbid][0]);
 #endif
         /* NO BREAK */
-    case TESTBENCH_RUNNING:
+    case TESTBENCH_RUNNING:  
         (* (PC_func[tbid]))();
         *state = TESTBENCH_FINISH;
 #if SEND_SINGNAL_AT_START_AND_END
