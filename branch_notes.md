@@ -8,7 +8,7 @@
 - main 
 	- 简介和功能
 		- alpaca和latics已实现 
-		- 一致性测试已通过 #5
+		- 一致性测试已通过 [issue 5](https://github.com/Yuano0o/alpaca/issues/5)
 	- 备注(问题)
 		- printf串口打印失效
 
@@ -28,5 +28,6 @@
 			- 备注 
 				-  MCLK = 8MHz
 				- 分别测量alpaca()和latics() 
-					- 否则会有问题 具体描述见 #5
-					- 类似问题见 #10
+					- 否则会有问题 具体描述见 [issue 5](https://github.com/Yuano0o/alpaca/issues/5)
+						- 类似问题见 [issue 10](https://github.com/Yuano0o/alpaca/issues/10)
+
