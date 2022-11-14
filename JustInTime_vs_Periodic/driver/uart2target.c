@@ -27,23 +27,6 @@ void uart2target_init()
 }
 
 
-static __nv uint8_t int2str_buf[INT2STR_BUFLEN] = {};
-static const uint8_t int2str_zero[] = {'0', '\0'};
-uint8_t* int2str(uint16_t val) {
-    if (val == 0)   return (uint8_t*)int2str_zero;
-
-    int2str_buf[INT2STR_BUFLEN - 1] = 0;
-    uint16_t x = INT2STR_BUFLEN - 1;
-    while (val > 0) {
-        x--;
-        int2str_buf[x] = (val % 10) + '0';
-        val /= 10;
-    }
-    return &(int2str_buf[x]);
-}
-
-/*
-
 int fputc(int _c, register FILE *_fp)
 {
   EUSCI_A_UART_transmitData(UART_BASEADDR, (unsigned char) _c );
@@ -63,5 +46,3 @@ int fputs(const char *_ptr, register FILE *_fp)
 
   return len;
 }
-
-*/

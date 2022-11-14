@@ -30,31 +30,35 @@ void power_on_init()
 #if defined(__MSP430FR5969__) || defined(__MSP430FR5994__)
 void clock_sys_init()
 {
+    CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_6);                              // DCO in 8MHz
 
 #if WORKING_FREQUENCY_IN_MHZ == 1
-    CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_0);                              // DCO in 1MHz
-    CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // MCLK = DCO = 1MHz
-    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // SMCLK = DCO = 1MHz
+    CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_8);  // MCLK = DCO/8 = 1MHz
 #elif WORKING_FREQUENCY_IN_MHZ == 2
-    CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_3);                              // DCO in 4MHz
-    CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_2);  // MCLK = DCO/2 = 2MHz
-    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_2);  // SMCLK = DCO/2 = 2MHz
+    CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_4);  // MCLK = DCO/4 = 2MHz
 #elif WORKING_FREQUENCY_IN_MHZ == 4
-    CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_3);                              // DCO in 4MHz
-    CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // MCLK = DCO = 4MHz
-    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // SMCLK = DCO = 4MHz
+    CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_2);  // MCLK = DCO/2 = 4MHz
 #elif WORKING_FREQUENCY_IN_MHZ == 8
-    CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_6);                              // DCO in 8MHz
     CS_initClockSignal(CS_MCLK,   CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // MCLK = DCO = 8MHz
-    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_8);  // SMCLK = DCO/8 = 1MHz, x8 divided DCO
-    CS_initClockSignal(CS_ACLK,   CS_VLOCLK_SELECT,   CS_CLOCK_DIVIDER_1);
 #else
 #error "WORKING FREQUENCY ILLEGAL!"
 #endif
 
-    CS_initClockSignal(CS_ACLK,   CS_VLOCLK_SELECT,   CS_CLOCK_DIVIDER_1);
-    CS_turnOffLFXT();
+#if SMCLK_FREQUENCY_IN_MHZ == 1
+    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_8);  // SMCLK = DCO/8 = 1MHz
+#elif SMCLK_FREQUENCY_IN_MHZ == 2
+    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_4);  // SMCLK = DCO/4 = 2MHz
+#elif SMCLK_FREQUENCY_IN_MHZ == 4
+    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_2);  // SMCLK = DCO/2 = 4MHz
+#elif SMCLK_FREQUENCY_IN_MHZ == 8
+    CS_initClockSignal(CS_SMCLK,  CS_DCOCLK_SELECT,   CS_CLOCK_DIVIDER_1);  // SMCLK = DCO = 8MHz
+#else
+#error "WORKING FREQUENCY ILLEGAL!"
+#endif
+
+    /* ACLK keeps default. */
 }
+
 #elif defined(__MSP430FR2433__)
 
 #define MCLK_FREQ_MHZ 1                     // MCLK = 1MHz

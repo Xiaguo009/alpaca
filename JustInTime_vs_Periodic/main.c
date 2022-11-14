@@ -31,6 +31,19 @@ int main()
     uart2target_init();
     timer_init();
 
+
+    while (1) {
+        printf("String test: %s, int test: %d, longint test: %ld, float test: %f.",
+               "Hello world.",
+               12,
+               0x12345678,
+               0.32342);
+
+
+    }
+
+    return 0;
+
     if (running_flag == 0) {
         turn_on_green_led;
         left_button_init;
