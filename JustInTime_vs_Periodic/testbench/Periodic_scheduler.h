@@ -53,8 +53,8 @@
     {                                                               \
         BUILDIN_BACKUP;                                             \
     }                                                               \
-    status |= 0xF000;  \
-    ++task_count
+    status |= 0xF000
+    //++task_count
     //printf("id: %d. task count: %d. \n",id,++task_count)
     
     

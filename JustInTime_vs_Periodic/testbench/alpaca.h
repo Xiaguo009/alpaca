@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+
 //1.for vbm
 //
 //cur_version ,for vbm. ++ when reboot and transition_to
@@ -53,13 +54,20 @@ void commit();
 //
 #define __COMMIT commit() //inline or call? like cpu_wirte()
 
+//for count
+#define __PRE_COMMIT(data_src, data_dest, var_size)                                 \
+    write_to_gbuf((unsigned long)(data_src), (unsigned long)(data_dest), var_size); \
+    ++bench_commit;                                                                 \
+    ++task_commit[status]
+
 #define __TASK(id, name) \
     name:                \
     ++_numBoots;         \
     __COMMIT;            \
-    ++task_count //for testing
+    status |= 0xF000;    \  
+    ++task_count[status] //for testing
     //printf("id: %d. task count: %d. \n",id,++task_count)
-    
+    //status: to be consistent with latics
 
 
 #define __TRANSITION_TO(id, name) \
@@ -67,7 +75,14 @@ void commit();
     status = id;                  \
     goto name
 
-#define __TASK_DOWN return
+///printf invalid
+#define __TASK_DOWN                           \
+    printf("bench_task_count:%d, bench_commit:%d.\n",bench_task_count, bench_commit);   \
+    for (int i = TASK_NUM; i < TASK_NUM; i++) \
+    {                                         \
+        printf("task_id:%d, task_count:%d, task_commit:%d.\n", i, task_count[i], task_commit[i]); \
+    }                                         \
+    return
 
 #define __GET_CURTASK  (status & 0x0FFF) 
 // 

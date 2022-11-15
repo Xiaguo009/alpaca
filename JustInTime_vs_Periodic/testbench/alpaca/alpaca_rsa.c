@@ -7,7 +7,16 @@
 
 // char * msgPt = MSG;
 
-static __nv uint16_t  status = 0;  //cur_task->id
+//static __nv uint16_t  status = 0;  //cur_task->id
+//for test
+static __nv uint16_t  status = 0;  //task_id
+//count for current bench
+static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+//count for task[i]
+static const uint8_t TASK_NUM = RSA_TASK_NUM;
+static __nv uint16_t task_count[TASK_NUM] = {0}; //total execution times for task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit times for all execution times of task[i]
 
 
 __GLOBAL_SCALAR(long int, p);         //1
@@ -69,8 +78,7 @@ void alpaca_rsa_main()
     //case 10: goto encrypt_print; //     
     case 11: goto decrypt_init; //     
     case 12: goto decrypt_inner_loop; 
-    case 13: goto decrypt_finish; //   
-    //case 14: goto decrypt_print; //     
+    case 13: goto decrypt_finish; //       
     }
 
 
@@ -106,10 +114,10 @@ i_priv = __GET(i);
     __GET(i_priv)++; // start with i=2
 
     if (__GET(i_priv) >= __GET(t)) {
-        write_to_gbuf(&i_priv, &i, sizeof(i));
+        __PRE_COMMIT(&i_priv, &i, sizeof(i));
         __TRANSITION_TO(7, encrypt_init);
     } else {
-        write_to_gbuf(&i_priv, &i, sizeof(i));
+        __PRE_COMMIT(&i_priv, &i, sizeof(i));
         __TRANSITION_TO(2, ce_2);
     }
 
@@ -192,10 +200,10 @@ k_priv = __GET(k);
     }
 
     if (__GET(k_priv) < 9) {
-        write_to_gbuf(&k_priv, &k, sizeof(k));
+        __PRE_COMMIT(&k_priv, &k, sizeof(k));
         __TRANSITION_TO(1, ce_1);
     } else {
-        write_to_gbuf(&k_priv, &k, sizeof(k));
+        __PRE_COMMIT(&k_priv, &k, sizeof(k));
         __TRANSITION_TO(7, encrypt_init);
     }
 
@@ -231,12 +239,12 @@ en_j_priv = __GET(en_j);
         __GET(en_k_priv) = __cry;
         __GET(en_j_priv)++;
         //
-        write_to_gbuf(&en_k_priv, &en_k, sizeof(en_k));
-        write_to_gbuf(&en_j_priv, &en_j, sizeof(en_j));
+        __PRE_COMMIT(&en_k_priv, &en_k, sizeof(en_k));
+        __PRE_COMMIT(&en_j_priv, &en_j, sizeof(en_j));
         __TRANSITION_TO(8, encrypt_inner_loop);
     } else {
-        write_to_gbuf(&en_k_priv, &en_k, sizeof(en_k));
-        write_to_gbuf(&en_j_priv, &en_j, sizeof(en_j));
+        __PRE_COMMIT(&en_k_priv, &en_k, sizeof(en_k));
+        __PRE_COMMIT(&en_j_priv, &en_j, sizeof(en_j));
         __TRANSITION_TO(9, encrypt_finish);
     }
 
@@ -257,12 +265,12 @@ en_cnt_priv = __GET(en_cnt);
     if (__GET(en_cnt_priv) < MSG_LEN) {
         __GET(en_cnt_priv)++;
         //
-        write_to_gbuf(&en_cnt_priv, &en_cnt, sizeof(en_cnt));
+        __PRE_COMMIT(&en_cnt_priv, &en_cnt, sizeof(en_cnt));
         __TRANSITION_TO(7, encrypt_init);
     } else {
         __GET(en[ __GET(en_cnt_priv) ]) = -1;
         //
-        write_to_gbuf(&en_cnt_priv, &en_cnt, sizeof(en_cnt));
+        __PRE_COMMIT(&en_cnt_priv, &en_cnt, sizeof(en_cnt));
         __TRANSITION_TO(11, decrypt_init);
     }
 
@@ -298,12 +306,12 @@ de_j_priv = __GET(de_j);
         __GET(de_k_priv) = __cry;
         __GET(de_j_priv)++;
         //
-        write_to_gbuf(&de_k_priv, &de_k, sizeof(de_k));
-        write_to_gbuf(&de_j_priv, &de_j, sizeof(de_j));
+        __PRE_COMMIT(&de_k_priv, &de_k, sizeof(de_k));
+        __PRE_COMMIT(&de_j_priv, &de_j, sizeof(de_j));
         __TRANSITION_TO(12, decrypt_inner_loop);
     } else {
-        write_to_gbuf(&de_k_priv, &de_k, sizeof(de_k));
-        write_to_gbuf(&de_j_priv, &de_j, sizeof(de_j));
+        __PRE_COMMIT(&de_k_priv, &de_k, sizeof(de_k));
+        __PRE_COMMIT(&de_j_priv, &de_j, sizeof(de_j));
         __TRANSITION_TO(13, decrypt_finish);
     }
 
@@ -325,23 +333,11 @@ de_cnt_priv = __GET(de_cnt);
     if (__GET(en[ __GET(de_cnt_priv) ]) != -1) {
         __GET(de_cnt_priv)++;
         //
-        write_to_gbuf(&de_cnt_priv, &de_cnt, sizeof(de_cnt));
+        __PRE_COMMIT(&de_cnt_priv, &de_cnt, sizeof(de_cnt));
         __TRANSITION_TO(11, decrypt_init);
     } else {
-        write_to_gbuf(&de_cnt_priv, &de_cnt, sizeof(de_cnt));
+        __PRE_COMMIT(&de_cnt_priv, &de_cnt, sizeof(de_cnt));
         __TASK_DOWN;  //down
     }
 
-
-
-
-
-// __TASK(14, decrypt_print); // 14
-
-//     if (full_run_started) {
-//         full_run_started = 0;
-//     }
-
-//     NEXT(0);
-
-} //main
+}

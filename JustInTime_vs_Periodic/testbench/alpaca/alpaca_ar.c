@@ -33,8 +33,16 @@ __GLOBAL_ARRAY(uint16_t,         resultStationaryPct,4);
 __GLOBAL_ARRAY(uint16_t,         resultMovingPct,4);
 __GLOBAL_ARRAY(uint16_t,         sum,4);
 
-static __nv uint16_t  status = 0;  //cur_task->id
-
+//static __nv uint16_t  status = 0;  //cur_task->id
+//for test
+static __nv uint16_t  status = 0;  //task_id
+//count for current bench
+static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+//count for task[i]
+static const uint8_t TASK_NUM = AR_TASK_NUM;
+static __nv uint16_t task_count[TASK_NUM] = {0}; // total execution times for task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; // total pre_commit times for all execution times of task[i]
 
 // declaration
 static __nv uint16_t _v_pinState_priv;
@@ -116,7 +124,7 @@ void alpaca_ar_main()
        volatile uint16_t pin_state = MODE_TRAIN_MOVING;  // 1
        _v_count_priv++;
 
-       if(_v_count_priv >= 7)            __TASK_DOWN;// return TASK_FINISH;
+       if(_v_count_priv >= 7)            {__TASK_DOWN;}// return TASK_FINISH;
        else if(_v_count_priv >= 3)       pin_state = MODE_RECOGNIZE;        // 0
        else if(_v_count_priv >= 2)       pin_state = MODE_TRAIN_STATIONARY; // 2
 
@@ -138,16 +146,16 @@ void alpaca_ar_main()
            __GET(_v_samplesInWindow) = 0;
 
            //3
-           write_to_gbuf(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
-           //write_to_gbuf(&_v_discardedSamplesCount_priv, &_v_discardedSamplesCount, sizeof(_v_discardedSamplesCount));
-           //write_to_gbuf(&_v_class_priv, &_v_class_priv, sizeof(_v_class));
-  /*         write_to_gbuf(&_v_totalcount_priv, &_v_totalcount, sizeof(_v_totalcount));
-           write_to_gbuf(&_v_movingcount_priv, &_v_movingcount, sizeof(_v_movingcount));
-           write_to_gbuf(&_v_stationarycount_priv, &_v_stationarycount, sizeof(_v_stationarycount));
-           write_to_gbuf(&_v_features_priv, &_v_features, sizeof(_v_features));
-           write_to_gbuf(&_v_trainingsetsize_priv, &_v_trainingsetsize, sizeof(_v_trainingsetsize));
-           write_to_gbuf(&_v_samplesinwindow_priv, &_v_samplesinwindow, sizeof(_v_samplesinwindow));*/
-           write_to_gbuf(&_v_count_priv, &_v_count, sizeof(_v_count));
+           __PRE_COMMIT(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
+           //__PRE_COMMIT(&_v_discardedSamplesCount_priv, &_v_discardedSamplesCount, sizeof(_v_discardedSamplesCount));
+           //__PRE_COMMIT(&_v_class_priv, &_v_class_priv, sizeof(_v_class));
+  /*         __PRE_COMMIT(&_v_totalcount_priv, &_v_totalcount, sizeof(_v_totalcount));
+           __PRE_COMMIT(&_v_movingcount_priv, &_v_movingcount, sizeof(_v_movingcount));
+           __PRE_COMMIT(&_v_stationarycount_priv, &_v_stationarycount, sizeof(_v_stationarycount));
+           __PRE_COMMIT(&_v_features_priv, &_v_features, sizeof(_v_features));
+           __PRE_COMMIT(&_v_trainingsetsize_priv, &_v_trainingsetsize, sizeof(_v_trainingsetsize));
+           __PRE_COMMIT(&_v_samplesinwindow_priv, &_v_samplesinwindow, sizeof(_v_samplesinwindow));*/
+           __PRE_COMMIT(&_v_count_priv, &_v_count, sizeof(_v_count));
 
            __TRANSITION_TO(7, Warm_Up);
 
@@ -158,8 +166,8 @@ void alpaca_ar_main()
            __GET(_v_samplesInWindow) = 0;
 
            //3
-           write_to_gbuf(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
-           write_to_gbuf(&_v_count_priv, &_v_count, sizeof(_v_count));
+           __PRE_COMMIT(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
+           __PRE_COMMIT(&_v_count_priv, &_v_count, sizeof(_v_count));
 
            __TRANSITION_TO(7, Warm_Up);
 
@@ -171,14 +179,14 @@ void alpaca_ar_main()
            __GET(_v_samplesInWindow) = 0;
 
            //3
-           write_to_gbuf(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
-           write_to_gbuf(&_v_count_priv, &_v_count, sizeof(_v_count));
+           __PRE_COMMIT(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
+           __PRE_COMMIT(&_v_count_priv, &_v_count, sizeof(_v_count));
            __TRANSITION_TO(2, AR_Sample);
 
        default: 
            //3
-           write_to_gbuf(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
-           write_to_gbuf(&_v_count_priv, &_v_count, sizeof(_v_count));
+           __PRE_COMMIT(&_v_pinState_priv, &_v_pinState, sizeof(_v_pinState));
+           __PRE_COMMIT(&_v_count_priv, &_v_count, sizeof(_v_count));
            __TRANSITION_TO(1, Select_Mode);
        }
 
@@ -198,13 +206,13 @@ __TASK(2, AR_Sample);
 
        if (_v_samplesInWindow_priv < AR_ACCEL_WINDOW_SIZE) {
            //3
-           write_to_gbuf(&_v_samplesInWindow_priv, &_v_samplesInWindow, sizeof(_v_samplesInWindow));
+           __PRE_COMMIT(&_v_samplesInWindow_priv, &_v_samplesInWindow, sizeof(_v_samplesInWindow));
            __TRANSITION_TO(2, AR_Sample);
        }
        else {
            _v_samplesInWindow_priv = 0;
            //3
-           write_to_gbuf(&_v_samplesInWindow_priv, &_v_samplesInWindow, sizeof(_v_samplesInWindow));
+           __PRE_COMMIT(&_v_samplesInWindow_priv, &_v_samplesInWindow, sizeof(_v_samplesInWindow));
            __TRANSITION_TO(3, AR_Transform);
        }
 
@@ -237,7 +245,7 @@ __TASK(3, AR_Transform);  //_v_window[]
                //after wt
                if (!vbm_test(_v_window_vbm[i])) {
                    vbm_set(_v_window_vbm[i]);
-                   write_to_gbuf(&_v_window_priv[i], &_v_window[i], sizeof(_v_window[i]));
+                   __PRE_COMMIT(&_v_window_priv[i], &_v_window[i], sizeof(_v_window[i]));
                }
            }
        }
@@ -381,17 +389,17 @@ __TASK(5, AR_Classify);
            __GET(i_debug)++;
 
            //3
-           write_to_gbuf(&_v_totalCount_priv, &_v_totalCount, sizeof(_v_totalCount));
-           write_to_gbuf(&_v_movingCount_priv, &_v_movingCount, sizeof(_v_movingCount));
-           write_to_gbuf(&_v_stationaryCount_priv, &_v_stationaryCount, sizeof(_v_stationaryCount));
+           __PRE_COMMIT(&_v_totalCount_priv, &_v_totalCount, sizeof(_v_totalCount));
+           __PRE_COMMIT(&_v_movingCount_priv, &_v_movingCount, sizeof(_v_movingCount));
+           __PRE_COMMIT(&_v_stationaryCount_priv, &_v_stationaryCount, sizeof(_v_stationaryCount));
 
            __TRANSITION_TO(1, Select_Mode);
        }
        else {
            //3
-           write_to_gbuf(&_v_totalCount_priv, &_v_totalCount, sizeof(_v_totalCount));
-           write_to_gbuf(&_v_movingCount_priv, &_v_movingCount, sizeof(_v_movingCount));
-           write_to_gbuf(&_v_stationaryCount_priv, &_v_stationaryCount, sizeof(_v_stationaryCount));
+           __PRE_COMMIT(&_v_totalCount_priv, &_v_totalCount, sizeof(_v_totalCount));
+           __PRE_COMMIT(&_v_movingCount_priv, &_v_movingCount, sizeof(_v_movingCount));
+           __PRE_COMMIT(&_v_stationaryCount_priv, &_v_stationaryCount, sizeof(_v_stationaryCount));
 
            __TRANSITION_TO(2, AR_Sample);
        }
@@ -408,14 +416,14 @@ _v_discardedSamplesCount_priv = __GET(_v_discardedSamplesCount);
            AR_SingleSample(&tA8_sample, &(__GET(ar_v_seed)));
            _v_discardedSamplesCount_priv++;
            //3
-           write_to_gbuf(&_v_discardedSamplesCount_priv, &_v_discardedSamplesCount, sizeof(_v_discardedSamplesCount));
+           __PRE_COMMIT(&_v_discardedSamplesCount_priv, &_v_discardedSamplesCount, sizeof(_v_discardedSamplesCount));
            __TRANSITION_TO(7, Warm_Up);
         }
        else
        {
            __GET(_v_trainingSetSize) = 0;
            //3
-           write_to_gbuf(&_v_discardedSamplesCount_priv, &_v_discardedSamplesCount, sizeof(_v_discardedSamplesCount));
+           __PRE_COMMIT(&_v_discardedSamplesCount_priv, &_v_discardedSamplesCount, sizeof(_v_discardedSamplesCount));
            __TRANSITION_TO(2, AR_Sample);
        }
 
@@ -443,13 +451,13 @@ __TASK(8, AR_Train);
        _v_trainingSetSize_priv++;
        if(_v_trainingSetSize_priv < AR_MODEL_SIZE) {
            //3
-           write_to_gbuf(&_v_trainingSetSize_priv, &_v_trainingSetSize, sizeof(_v_trainingSetSize));
+           __PRE_COMMIT(&_v_trainingSetSize_priv, &_v_trainingSetSize, sizeof(_v_trainingSetSize));
 
            __TRANSITION_TO(2, AR_Sample);
        }
        else {
            //3
-           write_to_gbuf(&_v_trainingSetSize_priv, &_v_trainingSetSize, sizeof(_v_trainingSetSize));
+           __PRE_COMMIT(&_v_trainingSetSize_priv, &_v_trainingSetSize, sizeof(_v_trainingSetSize));
 
            __TRANSITION_TO(1, Select_Mode);
        }

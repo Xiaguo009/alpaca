@@ -329,8 +329,17 @@ __GLOBAL_ARRAY(uint32_t, key, 18);
 
 __GLOBAL_SCALAR(unsigned, next_task);
 
-static __nv uint16_t  status = 0;  //cur_task->id
-
+//static __nv uint16_t  status = 0;  //cur_task->id
+//for test
+static __nv uint16_t  status = 0;  //task_id
+//count for current bench
+static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+//count for task[i]
+static const uint8_t TASK_NUM = BLOWFISH_TASK_NUM;
+static __nv uint16_t task_count[TASK_NUM] = {0}; //total execution times for task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit times for all execution times of task[i]
+//note: task[2] is unused
 
 //scalar
 __nv unsigned index_priv;
@@ -428,13 +437,13 @@ void alpaca_blowfish_main()
 	//if(__GET(index) == 3){
 	if(index_priv == 3){
 		//pre_commit
-		write_to_gbuf(&index_priv, &index, sizeof(index));
+		__PRE_COMMIT(&index_priv, &index, sizeof(index));
 		 __TRANSITION_TO(5, task_set_key);
 	}
 	else {
 		//++__GET(index);
 		++index_priv;
-		write_to_gbuf(&index_priv, &index, sizeof(index));
+		__PRE_COMMIT(&index_priv, &index, sizeof(index));
 		 __TRANSITION_TO(4, task_init_s);
 	}
 
@@ -481,7 +490,7 @@ void alpaca_blowfish_main()
 		index2_priv += 2;
 		__GET(next_task) = 6;
 
-        write_to_gbuf(&index2_priv, &index2, sizeof(index2));
+        __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
 		 __TRANSITION_TO(7, task_encrypt);
 	}
 	else {
@@ -491,7 +500,7 @@ void alpaca_blowfish_main()
 
 			index2_priv += 2;
 
-            write_to_gbuf(&index2_priv, &index2, sizeof(index2));
+            __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
 			 __TRANSITION_TO(7, task_encrypt);
 		}
 		else { //set s
@@ -500,7 +509,7 @@ void alpaca_blowfish_main()
 				__GET(s0[index2-19]) = __GET(input[1]);
 
 				index2_priv += 2;
-                write_to_gbuf(&index2_priv, &index2, sizeof(index2));
+                __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
 				 __TRANSITION_TO(7, task_encrypt);
 			}
 			else if (index2_priv < (512 + 20)) { //set s1
@@ -508,7 +517,7 @@ void alpaca_blowfish_main()
 				__GET(s1[index2-(256+19)]) = __GET(input[1]);
 
 				index2_priv += 2;
-                write_to_gbuf(&index2_priv, &index2, sizeof(index2));
+                __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
 				 __TRANSITION_TO(7, task_encrypt);
 			}
 			else if (index2_priv < (256*3 + 20)) { //set s2
@@ -516,7 +525,7 @@ void alpaca_blowfish_main()
 				__GET(s2[index2-(256*2+19)]) = __GET(input[1]);
 
 				index2_priv += 2;
-                write_to_gbuf(&index2_priv, &index2, sizeof(index2));
+                __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
 				 __TRANSITION_TO(7, task_encrypt);
 			}
 			else if (index2_priv < (256*4 + 20)) {
@@ -525,12 +534,12 @@ void alpaca_blowfish_main()
 
 				index2_priv += 2;
 				if (index2_priv < (256*4 + 20)) {
-                    write_to_gbuf(&index2_priv, &index2, sizeof(index2));
+                    __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
 					 __TRANSITION_TO(7, task_encrypt);
 				}
 				else { //done
 					index2_priv = 0;
-                    write_to_gbuf(&index2_priv, &index2, sizeof(index2));
+                    __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
 					 __TRANSITION_TO(8, task_start_encrypt);	
 				}
 			}
@@ -583,13 +592,13 @@ void alpaca_blowfish_main()
 	input_priv[1] = r;
 	if (!vbm_test(input_vbm[1])) {
 		vbm_set(input_vbm[1]);
-		write_to_gbuf(&input_priv[1], &input[1], sizeof(input[1]));
+		__PRE_COMMIT(&input_priv[1], &input[1], sizeof(input[1]));
 	}
 
 	input_priv[0] = l;
 	if (!vbm_test(input_vbm[0])) {
 		vbm_set(input_vbm[0]);
-		write_to_gbuf(&input_priv[0], &input[0], sizeof(input[0]));
+		__PRE_COMMIT(&input_priv[0], &input[0], sizeof(input[0]));
 	}
 
 	__NEXT_TASK(next_task);
@@ -653,19 +662,19 @@ void alpaca_blowfish_main()
     iv_priv[n] = c;
     if (!vbm_test(iv_vbm[n])) {
         iv_priv[n] = __GET(iv[n]);
-        write_to_gbuf(&iv_priv[n], &iv[n], sizeof(iv[n]));} //__GET?}
+        __PRE_COMMIT(&iv_priv[n], &iv[n], sizeof(iv[n]));} //__GET?}
     
 	n_priv = (n_priv+1)&0x07;
 	++index2_priv;
 	if (index2_priv == LENGTH) {
-        write_to_gbuf(&index2_priv, &index2, sizeof(index2));
-		write_to_gbuf(&n_priv, &n, sizeof(n));
+        __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
+		__PRE_COMMIT(&n_priv, &n, sizeof(n));
 		__TASK_DOWN;
 		//__TRANSITION_TO(2, task_done);	
 	}
 	else {
-        write_to_gbuf(&index2_priv, &index2, sizeof(index2));
-		write_to_gbuf(&n_priv, &n, sizeof(n));
+        __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
+		__PRE_COMMIT(&n_priv, &n, sizeof(n));
 		 __TRANSITION_TO(8, task_start_encrypt);	
 	}
 

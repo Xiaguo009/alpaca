@@ -21,7 +21,17 @@ __GLOBAL_SCALAR(cem_index_t,    _v_symbol);
 __GLOBAL_ARRAY(cem_node_t,     _v_compressed_data,CEM_BLOCK_SIZE);
 __GLOBAL_ARRAY(cem_node_t,     _v_dict,CEM_DICT_SIZE);
 
-static __nv uint16_t  status = 0;  //cur_task->id
+//static __nv uint16_t  status = 0;  //cur_task->id
+//for test
+static __nv uint16_t  status = 0;  //task_id
+//count for current bench
+static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+//count for task[i]
+static const uint8_t TASK_NUM = CEM_TASK_NUM;
+static __nv uint16_t task_count[TASK_NUM] = {0}; //total execution times for task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit times for all execution times of task[i]
+
 
 // 0.
 //node_t _v_compressed_data[BLOCK_SIZE];//192
@@ -89,7 +99,7 @@ __GET(_v_letter) = CEM_NUM_LETTERS + 1;
 __GET(_v_node_count) = CEM_NUM_LETTERS; //16
 
 //3
-//write_to_gbuf(&_v_letter_idx_priv, &_v_letter, sizeof(_v_letter));
+//__PRE_COMMIT(&_v_letter_idx_priv, &_v_letter, sizeof(_v_letter));
 __TRANSITION_TO(2, Sample);
 
 
@@ -108,14 +118,14 @@ if (_v_letter_idx_priv == 0)
 {
    _v_letter_idx_priv = next_letter_idx;
 
-   write_to_gbuf(&_v_letter_idx_priv, &_v_letter_idx, sizeof(_v_letter_idx));
+   __PRE_COMMIT(&_v_letter_idx_priv, &_v_letter_idx, sizeof(_v_letter_idx));
    __TRANSITION_TO(3, Measure_Temp);
 }
 else
 {
     _v_letter_idx_priv = next_letter_idx;
    //3    
-   write_to_gbuf(&_v_letter_idx_priv, &_v_letter_idx, sizeof(_v_letter_idx));
+   __PRE_COMMIT(&_v_letter_idx_priv, &_v_letter_idx, sizeof(_v_letter_idx));
    __TRANSITION_TO(4, Letterize);
 }
 
@@ -132,7 +142,7 @@ _v_prev_sample_priv = prev_sample;
 __GET(_v_sample) = sample;
 
 //3
-write_to_gbuf(&_v_prev_sample_priv, &_v_prev_sample, sizeof(_v_prev_sample));
+__PRE_COMMIT(&_v_prev_sample_priv, &_v_prev_sample, sizeof(_v_prev_sample));
 
 __TRANSITION_TO(4, Letterize);
 
@@ -169,7 +179,7 @@ __GET(_v_child) = __GET(_v_dict[parent].child);
 _v_sample_count_priv++;
 
 //3
-write_to_gbuf(&_v_sample_count_priv, &_v_sample_count, sizeof(_v_sample_count));
+__PRE_COMMIT(&_v_sample_count_priv, &_v_sample_count, sizeof(_v_sample_count));
 __TRANSITION_TO(6, Find_Sibling);
 
 
@@ -187,7 +197,7 @@ if (_v_sibling_priv != CEM_NIL)
        __GET(_v_parent_next) = _v_sibling_priv;
 
         //3 unnecessary?
-       write_to_gbuf(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
+       __PRE_COMMIT(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
 
        __TRANSITION_TO(4, Letterize);
    }
@@ -197,7 +207,7 @@ if (_v_sibling_priv != CEM_NIL)
        {
            _v_sibling_priv = __GET(_v_dict[idx].sibling);
            //3
-           write_to_gbuf(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
+           __PRE_COMMIT(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
 
            __TRANSITION_TO(6, Find_Sibling);
        }
@@ -208,12 +218,12 @@ cem_index_t starting_node_idx = (cem_index_t)__GET(_v_letter);
 __GET(_v_parent_next) = starting_node_idx;
 if (__GET(_v_child) == CEM_NIL) {
     //3
-    write_to_gbuf(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
+    __PRE_COMMIT(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
     __TRANSITION_TO(8, Add_Insert);
 }
 else {
     //3
-    write_to_gbuf(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
+    __PRE_COMMIT(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
     __TRANSITION_TO(7, Add_Node);
 }
 
@@ -227,7 +237,7 @@ if (__GET(_v_dict[i].sibling) != CEM_NIL)
 {
    cem_index_t next_sibling = __GET(_v_dict[i].sibling);
    _v_sibling_priv = next_sibling;
-   write_to_gbuf(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
+   __PRE_COMMIT(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
    __TRANSITION_TO(7, Add_Node);
 }
 else
@@ -235,7 +245,7 @@ else
    __GET(_v_sibling_node.letter) = __GET(_v_dict[i].letter);
    __GET(_v_sibling_node.sibling) = __GET(_v_dict[i].sibling);
    __GET(_v_sibling_node.child) = __GET(_v_dict[i].child);
-   write_to_gbuf(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
+   __PRE_COMMIT(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
    __TRANSITION_TO(8, Add_Insert);
 }
 
@@ -272,7 +282,7 @@ __GET(_v_symbol) = __GET(_v_parent);
 _v_node_count_priv++;
 
 //3
-write_to_gbuf(&_v_node_count_priv, &_v_node_count, sizeof(_v_node_count));
+__PRE_COMMIT(&_v_node_count_priv, &_v_node_count, sizeof(_v_node_count));
 
 __TRANSITION_TO(9, AppendCompressed);
 
@@ -285,13 +295,13 @@ __GET(_v_compressed_data[__GET(_v_out_len)].letter) = __GET(_v_symbol);
 _v_out_len_priv++;
 if(_v_out_len_priv == CEM_BLOCK_SIZE) {
     //3
-    write_to_gbuf(&_v_out_len_priv, &_v_out_len, sizeof(_v_out_len));
+    __PRE_COMMIT(&_v_out_len_priv, &_v_out_len, sizeof(_v_out_len));
 
     __TASK_DOWN; //__TRANSITION_TO( TASK_FINISH;
 }
 else {
     //3
-    write_to_gbuf(&_v_out_len_priv, &_v_out_len, sizeof(_v_out_len));
+    __PRE_COMMIT(&_v_out_len_priv, &_v_out_len, sizeof(_v_out_len));
     
     __TRANSITION_TO(2, Sample);
 }

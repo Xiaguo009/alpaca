@@ -13,7 +13,16 @@ __GLOBAL_SCALAR(uint16_t, _v_n_4);
 __GLOBAL_SCALAR(uint16_t, _v_n_5);
 __GLOBAL_SCALAR(uint16_t, _v_n_6);
 
-static __nv uint16_t  status = 0;  //cur_task->id
+//static __nv uint16_t  status = 0;  //cur_task->id
+//for test
+static __nv uint16_t  status = 0;  //task_id
+//count for current bench
+static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+//count for task[i]
+static const uint8_t TASK_NUM = BC_TASK_NUM;
+static __nv uint16_t task_count[TASK_NUM] = {0}; //total execution times for task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit times for all execution times of task[i]
 
 
 //0.declaration
@@ -74,7 +83,7 @@ __TASK(1, Func_Select);
 __GET(_v_seed) = (uint32_t)BITCOUNT_SEED;
 __GET(_v_iter) = 0;
 
-write_to_gbuf(&_v_func_priv, &_v_func, sizeof(_v_func));
+__PRE_COMMIT(&_v_func_priv, &_v_func, sizeof(_v_func));
 switch(_v_func_priv++)
 {
 
@@ -117,23 +126,23 @@ _v_n_0_priv += temp;
 _v_iter_priv++;
 if (_v_iter_priv < BITCOUNT_ITER) {
     //3
-    write_to_gbuf(&_v_n_0_priv, &_v_n_0, sizeof(_v_n_0));
-    //write_to_gbuf(&_v_n_1_priv, &_v_n_1, sizeof(_v_n_1));
-    //write_to_gbuf(&_v_n_2_priv, &_v_n_2, sizeof(_v_n_2));
-    //write_to_gbuf(&_v_n_3_priv, &_v_n_3, sizeof(_v_n_3));
-    //write_to_gbuf(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
-    //write_to_gbuf(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
-    //write_to_gbuf(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
-    //write_to_gbuf(&_v_func_priv, &_v_func, sizeof(_v_func));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_0_priv, &_v_n_0, sizeof(_v_n_0));
+    //__PRE_COMMIT(&_v_n_1_priv, &_v_n_1, sizeof(_v_n_1));
+    //__PRE_COMMIT(&_v_n_2_priv, &_v_n_2, sizeof(_v_n_2));
+    //__PRE_COMMIT(&_v_n_3_priv, &_v_n_3, sizeof(_v_n_3));
+    //__PRE_COMMIT(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
+    //__PRE_COMMIT(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
+    //__PRE_COMMIT(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
+    //__PRE_COMMIT(&_v_func_priv, &_v_func, sizeof(_v_func));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(2,func0);
 }
 else {
     //3
-    write_to_gbuf(&_v_n_0_priv, &_v_n_0, sizeof(_v_n_0));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_0_priv, &_v_n_0, sizeof(_v_n_0));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(1,Func_Select);
 }
 
@@ -164,22 +173,22 @@ _v_n_1_priv += (int)tmp_seed;
 _v_iter_priv++;
 if (_v_iter_priv < BITCOUNT_ITER) {
     //3    
-    write_to_gbuf(&_v_n_1_priv, &_v_n_1, sizeof(_v_n_1));
-    //write_to_gbuf(&_v_n_2_priv, &_v_n_2, sizeof(_v_n_2));
-    //write_to_gbuf(&_v_n_3_priv, &_v_n_3, sizeof(_v_n_3));
-    //write_to_gbuf(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
-    //write_to_gbuf(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
-    //write_to_gbuf(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
-    //write_to_gbuf(&_v_func_priv, &_v_func, sizeof(_v_func));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_1_priv, &_v_n_1, sizeof(_v_n_1));
+    //__PRE_COMMIT(&_v_n_2_priv, &_v_n_2, sizeof(_v_n_2));
+    //__PRE_COMMIT(&_v_n_3_priv, &_v_n_3, sizeof(_v_n_3));
+    //__PRE_COMMIT(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
+    //__PRE_COMMIT(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
+    //__PRE_COMMIT(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
+    //__PRE_COMMIT(&_v_func_priv, &_v_func, sizeof(_v_func));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(3,func1);
 }
 else {
     //3    
-    write_to_gbuf(&_v_n_1_priv, &_v_n_1, sizeof(_v_n_1));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_1_priv, &_v_n_1, sizeof(_v_n_1));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(1,Func_Select);
 }
 
@@ -205,22 +214,22 @@ _v_iter_priv++;
 if (_v_iter_priv < BITCOUNT_ITER) {
     //3    
 
-    write_to_gbuf(&_v_n_2_priv, &_v_n_2, sizeof(_v_n_2));
- /*   write_to_gbuf(&_v_n_3_priv, &_v_n_3, sizeof(_v_n_3));
-    write_to_gbuf(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
-    write_to_gbuf(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
-    write_to_gbuf(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
-    write_to_gbuf(&_v_func_priv, &_v_func, sizeof(_v_func));*/
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_2_priv, &_v_n_2, sizeof(_v_n_2));
+ /*   __PRE_COMMIT(&_v_n_3_priv, &_v_n_3, sizeof(_v_n_3));
+    __PRE_COMMIT(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
+    __PRE_COMMIT(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
+    __PRE_COMMIT(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
+    __PRE_COMMIT(&_v_func_priv, &_v_func, sizeof(_v_func));*/
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(4,NTBL0);
 }
 else {
     //3    
 
-    write_to_gbuf(&_v_n_2_priv, &_v_n_2, sizeof(_v_n_2));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_2_priv, &_v_n_2, sizeof(_v_n_2));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(1,Func_Select);
 }
 
@@ -252,21 +261,21 @@ _v_seed_priv = tmp_seed + 13;
 _v_iter_priv++;
 if (_v_iter_priv < BITCOUNT_ITER) {
     //3    
-    write_to_gbuf(&_v_n_3_priv, &_v_n_3, sizeof(_v_n_3));
- /*   write_to_gbuf(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
-    write_to_gbuf(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
-    write_to_gbuf(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
-    write_to_gbuf(&_v_func_priv, &_v_func, sizeof(_v_func));*/
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_3_priv, &_v_n_3, sizeof(_v_n_3));
+ /*   __PRE_COMMIT(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
+    __PRE_COMMIT(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
+    __PRE_COMMIT(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
+    __PRE_COMMIT(&_v_func_priv, &_v_func, sizeof(_v_func));*/
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(5, NTBL1);
 }
 else {
     //3    
 
-    write_to_gbuf(&_v_n_3_priv, &_v_n_3, sizeof(_v_n_3));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_3_priv, &_v_n_3, sizeof(_v_n_3));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(1,Func_Select);
 }
 
@@ -295,19 +304,19 @@ _v_seed_priv = tmp_seed + 13;
 _v_iter_priv++;
 if (_v_iter_priv < BITCOUNT_ITER) {
     //3    
-    write_to_gbuf(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
-    //write_to_gbuf(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
-    //write_to_gbuf(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
-    //write_to_gbuf(&_v_func_priv, &_v_func, sizeof(_v_func));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
+    //__PRE_COMMIT(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
+    //__PRE_COMMIT(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
+    //__PRE_COMMIT(&_v_func_priv, &_v_func, sizeof(_v_func));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(6,BW_BTBL);
 }
 else {
     //3    
-    write_to_gbuf(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_4_priv, &_v_n_4, sizeof(_v_n_4));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(1,Func_Select);
 }
 
@@ -334,19 +343,19 @@ _v_iter_priv++;
 if (_v_iter_priv < BITCOUNT_ITER) {
     //3    
     
-    write_to_gbuf(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
-    //write_to_gbuf(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
-    //write_to_gbuf(&_v_func_priv, &_v_func, sizeof(_v_func));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
+    //__PRE_COMMIT(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
+    //__PRE_COMMIT(&_v_func_priv, &_v_func, sizeof(_v_func));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(7, AR_BTBL);
 }
 else {
     //3    
 
-    write_to_gbuf(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_5_priv, &_v_n_5, sizeof(_v_n_5));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(1,Func_Select);
 }
 
@@ -378,18 +387,18 @@ _v_iter_priv++;
 if (_v_iter_priv < BITCOUNT_ITER) {
     //3    
 
-    write_to_gbuf(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
-    //write_to_gbuf(&_v_func_priv, &_v_func, sizeof(_v_func));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
+    //__PRE_COMMIT(&_v_func_priv, &_v_func, sizeof(_v_func));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(8, Bit_Shifter);
 }
 else {
     //3    
 
-    write_to_gbuf(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
-    write_to_gbuf(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
-    write_to_gbuf(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
+    __PRE_COMMIT(&_v_n_6_priv, &_v_n_6, sizeof(_v_n_6));
+    __PRE_COMMIT(&_v_seed_priv, &_v_seed, sizeof(_v_seed));
+    __PRE_COMMIT(&_v_iter_priv, &_v_iter, sizeof(_v_iter));
     __TRANSITION_TO(1,Func_Select);
 }
 

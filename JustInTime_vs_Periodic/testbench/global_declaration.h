@@ -14,9 +14,19 @@
 #include <stdbool.h>
 #include <stdio.h>//for printf
 
-//count
-extern uint32_t task_count;
+//count need to be removed
+//extern uint32_t task_count;
 
+// ====================================================for count====================================================
+#define AR_TASK_NUM 9
+#define BC_TASK_NUM 9
+#define BLOWFISH_TASK_NUM 11 //task[2] is unused 
+#define CEM_TASK_NUM 10
+#define CRC_TASK_NUM 2
+#define CUCKOO_TASK_NUM 7
+#define DIJKSTRA_TASK_NUM 3
+#define RSA_TASK_NUM 14 //task[10] is unused
+#define SORT_TASK_NUM 3
 
 // ====================================================  AR  ==================================================== //
 

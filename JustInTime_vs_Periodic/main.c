@@ -14,7 +14,6 @@ extern __nv uint8_t recovery_needed;
 extern __nv uint8_t system_in_lpm;
 
 //just for test.
-uint32_t task_count = 0; //need to be repaired.
 
 void alpaca();
 void Periodic_only();
@@ -32,7 +31,7 @@ int main()
     timer_init();
 
 
-    while (1) {
+    /*while (1) {
         printf("String test: %s, int test: %d, longint test: %ld, float test: %f.",
                "Hello world.",
                12,
@@ -40,9 +39,9 @@ int main()
                0.32342);
 
 
-    }
+    }*/
 
-    return 0;
+    //return 0;
 
     if (running_flag == 0) {
         turn_on_green_led;
@@ -60,6 +59,8 @@ int main()
 
     if (task_success_flag == true) { /* TODO: do something after success. */ }
 
+    (*(alpaca_ar_main))();
+
     // TODO: run testbench
     Alpaca_only();
     //Periodic_only();
@@ -67,18 +68,11 @@ int main()
 
 
 void Alpaca_only() {
-    uint16_t s, f;
     do {
         while (state != TESTBENCH_FINISH) {
-            timer_start_count(&s);
             alpaca_run_testbench(current_testbench, &state);
-            timer_end_count(&f);
         }
-        printf("current testbench: %d.Cycles: %ld.", current_testbench, timer_get_cycles(s, f));
         current_testbench++;
-        printf("the total number of tasks: %d.\n", task_count);
-        task_count = 0; // count
-
         if (current_testbench >= TESTBENCH_LIST_SIZE) {current_testbench = 0;return;}
         state = TESTBENCH_READY;
     } while (1);
@@ -87,18 +81,11 @@ void Alpaca_only() {
 }
 
 void Periodic_only() {
-    uint16_t a, b;
     do {
         while (state != TESTBENCH_FINISH) {
-            timer_start_count(&a);
             periodic_run_testbench(current_testbench, &state);
-            timer_end_count(&b);
         }
-        printf("current testbench: %d.Cycles: %ld.", current_testbench, timer_get_cycles(a, b));
         current_testbench++;
-        printf("the total number of tasks: %d.\n", task_count);
-        task_count = 0; // count
-
         if (current_testbench >= TESTBENCH_LIST_SIZE) {current_testbench = 0;return;} //end condition
         state = TESTBENCH_READY;
     } while (1);
