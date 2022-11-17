@@ -1,8 +1,3 @@
-// #include <app/app_api.h>
-// #include <app/app_global.h>
-// #include <scheduling/scheduler.h>
-// #include <scheduling/scheduler_based_task.h>
-
 #include <testbench/alpaca.h>
 #include <testbench/global_declaration.h>
 #include <testbench/testbench_api.h>
@@ -38,34 +33,27 @@ __GLOBAL_ARRAY(uint16_t,         sum,4);
 static __nv uint16_t  status = 0;  //task_id
 //count for current bench
 static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
-static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit size in a bench
 //count for task[i]
 static const uint8_t TASK_NUM = AR_TASK_NUM;
 static __nv uint16_t task_count[TASK_NUM] = {0}; // total execution times for task[i]
-static __nv uint16_t task_commit[TASK_NUM] = {0}; // total pre_commit times for all execution times of task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; // total pre_commit size for all execution times of task[i]
+
 
 // declaration
 static __nv uint16_t _v_pinState_priv;
-static __nv uint16_t _v_discardedSamplesCount_priv;
-//static __nv ar_class_t _v_class_priv;//6   // 4  
+static __nv uint16_t _v_discardedSamplesCount_priv; 
 
 static __nv uint16_t _v_totalCount_priv;
 static __nv uint16_t _v_movingCount_priv;
-static __nv uint16_t _v_stationaryCount_priv;//12   // 7   
+static __nv uint16_t _v_stationaryCount_priv; 
 
-static __nv accelReading _v_window_priv[AR_ACCEL_WINDOW_SIZE];  //23   
+static __nv accelReading _v_window_priv[AR_ACCEL_WINDOW_SIZE];  
 static __nv uint16_t _v_window_vbm[AR_ACCEL_WINDOW_SIZE];
 
-//static __nv ar_features_t _v_features_priv;//25   // 18   
-
-static __nv uint16_t _v_trainingSetSize_priv;//27  
-
+static __nv uint16_t _v_trainingSetSize_priv;
 static __nv uint16_t _v_samplesInWindow_priv;
-//static __nv ar_run_mode_t _v_mode_priv;  //31 
-
 static __nv uint16_t _v_count_priv;
-
-
 
 void alpaca_ar_main()
 {

@@ -2,7 +2,6 @@
 #include <testbench/Periodic_scheduler.h>
 #include <testbench/testbench_api.h>
 //TODO: 
-//addition to global_declaration.h + main.hpp
 //checkout for typedef unsigned uint32_t; 
 //backup size
 
@@ -17,10 +16,10 @@ WORD round_regs[64][8]; // round registers.
 
 static __nv bool      first_run = 1;  
 static __nv uint16_t  status = 0;
-//static const uint16_t global_war_size = SORT_LENGTH + 2;
-//static __nv uint16_t  backup_buf[SORT_LENGTH + 2] = {};
-
-//static const bool backup_needed[] = { false, true, true,false, true, true };
+//need to change
+static const uint16_t global_war_size = 0;
+static __nv uint16_t  backup_buf[1] = {0};
+static const bool backup_needed[] = { false, true, true,false, true, true };
 
 void pc_sha256_main()
 {
@@ -45,7 +44,7 @@ void pc_sha256_main()
 
 __BUILDIN_TASK_BOUNDARY(0,vector_init);
     for (uint16_t i = 0; i < 8; ++i){
-        __GET(msg_hash)[i] = INIT_VEC[i];
+        __GET(msg_hash[i]) = INIT_VEC[i];
     }
 
 __BUILDIN_TASK_BOUNDARY(1,message_padding);
@@ -61,11 +60,11 @@ __BUILDIN_TASK_BOUNDARY(1,message_padding);
     // Pad 1 in the following bit.
     uint16_t word_index = msg_len / 4;
     uint16_t bit_index = 8 * (msg_len % 4);
-    BIT_SET(__GET(msg)[word_index], bit_index);
+    BIT_SET(__GET(msg[word_index]), bit_index);
     // The 0 is automatically padded at first.
     // Pad len of the message.
-    __GET(msg)[14] = 0;
-    __GET(msg)[15] = (WORD)(8 * msg_len);
+    __GET(msg[14]) = 0;
+    __GET(msg[15]) = (WORD)(8 * msg_len);
 
     __GET(ei) = 0;
     __NEXT(2,message_expansion);
@@ -73,21 +72,26 @@ __BUILDIN_TASK_BOUNDARY(1,message_padding);
 
 __BUILDIN_TASK_BOUNDARY(2,message_expansion);
     if (__GET(ei) < 16) {
-        __GET(msg_exp)[__GET(ei)] = __GET(msg)[__GET(ei)];
+        __GET(msg_exp[__GET(ei)]) = __GET(msg[__GET(ei)]);
     } else {
-        __GET(msg_exp)[__GET(ei)] = SIG1(__GET(msg_exp)[__GET(ei) - 2]) + __GET(msg_exp)[__GET(ei) - 7] + SIG0(__GET(msg_exp)[__GET(ei) - 15]) + SIG0(__GET(msg_exp)[__GET(ei) - 16]);
+        __GET(msg_exp[__GET(ei)]) = SIG1(__GET(msg_exp[__GET(ei) - 2]))
+                                    + __GET(msg_exp[__GET(ei) - 7]) 
+                                    + SIG0(__GET(msg_exp[__GET(ei) - 15]))
+                                    + SIG0(__GET(msg_exp[__GET(ei) - 16]));
     }
 
     __GET(ei)++;
     if (__GET(ei) >= 64){
-        __NEXT(4,message_round);}
-    else{
+        __NEXT(4, message_round);
+    }
+    else
+    {
         __NEXT(3,message_round_init);
     }
 
 __BUILDIN_TASK_BOUNDARY(3,message_round_init);
     for (uint16_t i = 0; i < 8; ++i) {
-        __GET(round_regs)[0][i] = __GET(msg_hash)[i];
+        __GET(round_regs[0][i]) = __GET(msg_hash[i]);
     }
     __GET(ri) = 0;
     __NEXT(4,message_round);
@@ -95,17 +99,27 @@ __BUILDIN_TASK_BOUNDARY(3,message_round_init);
 
 __BUILDIN_TASK_BOUNDARY(4,message_round);
 
-    WORD t1 = __GET(round_regs)[__GET(ri)][7] + BIGSIG1(__GET(round_regs)[__GET(ri)][4]) + CH(__GET(round_regs)[__GET(ri)][4], __GET(round_regs)[__GET(ri)][5], __GET(round_regs)[__GET(ri)][6]) + RCST[__GET(ri)] + __GET(msg_exp)[__GET(ri)];
-    WORD t2 = BIGSIG0(__GET(round_regs)[__GET(ri)][0]) + MA(__GET(round_regs)[__GET(ri)][0], __GET(round_regs)[__GET(ri)][1], __GET(round_regs)[__GET(ri)][2]);
+    WORD t1 = __GET(round_regs[__GET(ri)][7]) 
+                + BIGSIG1(__GET(round_regs[__GET(ri)][4]))
+                + CH(__GET(round_regs[__GET(ri)][4]), 
+                        __GET(round_regs[__GET(ri)][5]), 
+                        __GET(round_regs[__GET(ri)][6])) 
+                + RCST[__GET(ri)] 
+                + __GET(msg_exp[__GET(ri)]);
 
-    __GET(round_regs)[__GET(ri)][7] = __GET(round_regs)[__GET(ri)][6];
-    __GET(round_regs)[__GET(ri)][6] = __GET(round_regs)[__GET(ri)][5];
-    __GET(round_regs)[__GET(ri)][5] = __GET(round_regs)[__GET(ri)][4];
-    __GET(round_regs)[__GET(ri)][4] = __GET(round_regs)[__GET(ri)][3] + t1;
-    __GET(round_regs)[__GET(ri)][3] = __GET(round_regs)[__GET(ri)][2];
-    __GET(round_regs)[__GET(ri)][2] = __GET(round_regs)[r1][1];
-    __GET(round_regs)[__GET(ri)][1] = __GET(round_regs)[__GET(ri)][0];
-    __GET(round_regs)[__GET(ri)][0] = t1 + t2;
+    WORD t2 = BIGSIG0(__GET(round_regs[__GET(ri)][0])) 
+                + MA(__GET(round_regs[__GET(ri)][0]), 
+                        __GET(round_regs[__GET(ri)][1]), 
+                        __GET(round_regs[__GET(ri)][2]));
+
+    __GET(round_regs[__GET(ri)][7]) = __GET(round_regs[__GET(ri)][6]);
+    __GET(round_regs[__GET(ri)][6]) = __GET(round_regs[__GET(ri)][5]);
+    __GET(round_regs[__GET(ri)][5]) = __GET(round_regs[__GET(ri)][4]);
+    __GET(round_regs[__GET(ri)][4]) = __GET(round_regs[__GET(ri)][3]) + t1;
+    __GET(round_regs[__GET(ri)][3]) = __GET(round_regs[__GET(ri)][2]);
+    __GET(round_regs[__GET(ri)][2]) = __GET(round_regs[__GET(ri)][1]);
+    __GET(round_regs[__GET(ri)][1]) = __GET(round_regs[__GET(ri)][0]);
+    __GET(round_regs[__GET(ri)][0]) = t1 + t2;
 
     __GET(ri)++;
     if (__GET(ri) >= 64) {
@@ -117,9 +131,9 @@ __BUILDIN_TASK_BOUNDARY(4,message_round);
 
 __BUILDIN_TASK_BOUNDARY(5,message_round_final);
     for (uint16_t i = 0; i < 8; ++i) {
-        __GET(msg_hash)[i] = __GET(round_regs)[63][i];
+        __GET(msg_hash[i]) = __GET(round_regs[63][i]);
     }
-    __TASK_DOWN;
+    __FINISH;
 
 
 }

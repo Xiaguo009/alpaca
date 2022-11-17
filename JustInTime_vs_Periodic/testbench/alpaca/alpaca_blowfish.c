@@ -11,23 +11,23 @@
 		__TRANSITION_TO(0, task_init);            \
 	case 1:                                       \
 		__TRANSITION_TO(1, task_set_ukey);        \
+	case 2:                                       \
+		__TRANSITION_TO(2, task_init_key);        \
 	case 3:                                       \
-		__TRANSITION_TO(3, task_init_key);        \
+		__TRANSITION_TO(3, task_init_s);          \
 	case 4:                                       \
-		__TRANSITION_TO(4, task_init_s);          \
+		__TRANSITION_TO(4, task_set_key);         \
 	case 5:                                       \
-		__TRANSITION_TO(5, task_set_key);         \
+		__TRANSITION_TO(5, task_set_key2);        \
 	case 6:                                       \
-		__TRANSITION_TO(6, task_set_key2);        \
+		__TRANSITION_TO(6, task_encrypt);         \
 	case 7:                                       \
-		__TRANSITION_TO(7, task_encrypt);         \
+		__TRANSITION_TO(7, task_start_encrypt);   \
 	case 8:                                       \
-		__TRANSITION_TO(8, task_start_encrypt);   \
-	case 9:                                       \
-		__TRANSITION_TO(9, task_start_encrypt2);  \
-	case 10:                                      \
-		__TRANSITION_TO(10, task_start_encrypt3); \
-	};
+		__TRANSITION_TO(8, task_start_encrypt2);  \
+	case 9:                                      \
+		__TRANSITION_TO(9, task_start_encrypt3); \
+	}
 
 static __ro_nv const char cp[32] = {'1','2','3','4','5','6','7','8','9','0',
 	'A','B','C','D','E','F','F','E','D','C','B','A',
@@ -334,11 +334,11 @@ __GLOBAL_SCALAR(unsigned, next_task);
 static __nv uint16_t  status = 0;  //task_id
 //count for current bench
 static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
-static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit size in a bench
 //count for task[i]
 static const uint8_t TASK_NUM = BLOWFISH_TASK_NUM;
 static __nv uint16_t task_count[TASK_NUM] = {0}; //total execution times for task[i]
-static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit times for all execution times of task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit size for all execution times of task[i]
 //note: task[2] is unused
 
 //scalar
@@ -359,15 +359,14 @@ void alpaca_blowfish_main()
 	switch(__GET_CURTASK) {
     case 0: goto task_init;
     case 1: goto task_set_ukey;
-    //case 2: goto task_done;
-	case 3: goto task_init_key;
-	case 4: goto task_init_s;
-	case 5: goto task_set_key;
-	case 6: goto task_set_key2;
-	case 7: goto task_encrypt;
-	case 8: goto task_start_encrypt;
-	case 9: goto task_start_encrypt2;
-	case 10: goto task_start_encrypt3;
+	case 2: goto task_init_key;
+	case 3: goto task_init_s;
+	case 4: goto task_set_key;
+	case 5: goto task_set_key2;
+	case 6: goto task_encrypt;
+	case 7: goto task_start_encrypt;
+	case 8: goto task_start_encrypt2;
+	case 9: goto task_start_encrypt3;
 	}
 
 
@@ -400,22 +399,22 @@ void alpaca_blowfish_main()
 		}
 
 	}
-	__TRANSITION_TO(3, task_init_key);
+	__TRANSITION_TO(2, task_init_key);
 
 
 
 	//__TASK(2, task_done);
 
 
-	__TASK(3, task_init_key);
+	__TASK(2, task_init_key);
 	//unsigned i;
 	for (i = 0; i < 18; ++i) {
 		__GET(key[i]) = init_key[i];
 	}
-	 __TRANSITION_TO(4, task_init_s);
+	 __TRANSITION_TO(3, task_init_s);
 
 
-	__TASK(4, task_init_s);
+	__TASK(3, task_init_s);
 	index_priv = __GET(index);//scaler
 
 	//unsigned i;
@@ -438,18 +437,18 @@ void alpaca_blowfish_main()
 	if(index_priv == 3){
 		//pre_commit
 		__PRE_COMMIT(&index_priv, &index, sizeof(index));
-		 __TRANSITION_TO(5, task_set_key);
+		 __TRANSITION_TO(4, task_set_key);
 	}
 	else {
 		//++__GET(index);
 		++index_priv;
 		__PRE_COMMIT(&index_priv, &index, sizeof(index));
-		 __TRANSITION_TO(4, task_init_s);
+		 __TRANSITION_TO(3, task_init_s);
 	}
 
 
 
-	__TASK(5, task_set_key);
+	__TASK(4, task_set_key);
 
 	//unsigned i;
 	uint32_t ri, ri2;
@@ -476,11 +475,11 @@ void alpaca_blowfish_main()
 
 		__GET(key[i]) ^= ri;
 	}
-	 __TRANSITION_TO(6, task_set_key2);
+	 __TRANSITION_TO(5, task_set_key2);
 
 
 
-	__TASK(6, task_set_key2);
+	__TASK(5, task_set_key2);
     index2_priv = __GET(index2);//scaler
     
 	if (index2_priv == 0) {
@@ -488,10 +487,10 @@ void alpaca_blowfish_main()
 		__GET(input[1]) = 0;
 
 		index2_priv += 2;
-		__GET(next_task) = 6;
+		__GET(next_task) = 5; // 6;
 
-        __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
-		 __TRANSITION_TO(7, task_encrypt);
+		__PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
+		 __TRANSITION_TO(6, task_encrypt);
 	}
 	else {
 		if (index2_priv < 20) { //set key
@@ -501,7 +500,7 @@ void alpaca_blowfish_main()
 			index2_priv += 2;
 
             __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
-			 __TRANSITION_TO(7, task_encrypt);
+			 __TRANSITION_TO(6, task_encrypt);
 		}
 		else { //set s
 			if (index2_priv < (256 + 20)) { //set s0 
@@ -510,7 +509,7 @@ void alpaca_blowfish_main()
 
 				index2_priv += 2;
                 __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
-				 __TRANSITION_TO(7, task_encrypt);
+				 __TRANSITION_TO(6, task_encrypt);
 			}
 			else if (index2_priv < (512 + 20)) { //set s1
 				__GET(s1[index2-(256+20)]) = __GET(input[0]);
@@ -518,7 +517,7 @@ void alpaca_blowfish_main()
 
 				index2_priv += 2;
                 __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
-				 __TRANSITION_TO(7, task_encrypt);
+				 __TRANSITION_TO(6, task_encrypt);
 			}
 			else if (index2_priv < (256*3 + 20)) { //set s2
 				__GET(s2[index2-(256*2+20)]) = __GET(input[0]);
@@ -526,7 +525,7 @@ void alpaca_blowfish_main()
 
 				index2_priv += 2;
                 __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
-				 __TRANSITION_TO(7, task_encrypt);
+				 __TRANSITION_TO(6, task_encrypt);
 			}
 			else if (index2_priv < (256*4 + 20)) {
 				__GET(s3[index2-(256*3+20)]) = __GET(input[0]);
@@ -535,18 +534,18 @@ void alpaca_blowfish_main()
 				index2_priv += 2;
 				if (index2_priv < (256*4 + 20)) {
                     __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
-					 __TRANSITION_TO(7, task_encrypt);
+					 __TRANSITION_TO(6, task_encrypt);
 				}
 				else { //done
 					index2_priv = 0;
                     __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
-					 __TRANSITION_TO(8, task_start_encrypt);	
+					 __TRANSITION_TO(7, task_start_encrypt);	
 				}
 			}
 		}
 	}
 
-	__TASK(7, task_encrypt);
+	__TASK(6, task_encrypt);
 	uint32_t p, l, r, s0_local, s1_local, s2_local, s3_local, tmp;
 	//	unsigned index = *READ(__GET(index));
 	//	uint8_t* return_to;
@@ -602,12 +601,12 @@ void alpaca_blowfish_main()
 	}
 
 	__NEXT_TASK(next_task);
-	//__TRANSITION_TO(6, task_set_key2);
+	//__TRANSITION_TO(5, task_set_key2);
 
 
 
 
-	__TASK(8, task_start_encrypt);
+	__TASK(7, task_start_encrypt);
 	//unsigned i;
 	//	n = *READ(__GET(n));
 	if (__GET(n) == 0) {
@@ -619,16 +618,16 @@ void alpaca_blowfish_main()
 		__GET(input[1])|=((unsigned long)(__GET(iv[5])))<<16L;
 		__GET(input[1])|=((unsigned long)(__GET(iv[6])))<< 8L;
 		__GET(input[1])|=((unsigned long)(__GET(iv[7])));
-		__GET(next_task) = 9; // TASK_REF(task_start_encrypt2);
-		__TRANSITION_TO(7, task_encrypt);
+		__GET(next_task) = 8; // 9; // TASK_REF(task_start_encrypt2);
+		__TRANSITION_TO(6, task_encrypt);
 	}
 	else {
-		 __TRANSITION_TO(10, task_start_encrypt3);
+		 __TRANSITION_TO(9, task_start_encrypt3);
 	}
 
 
 
-	__TASK(9, task_start_encrypt2);
+	__TASK(8, task_start_encrypt2);
 	__GET(iv[0]) = (unsigned char)(((__GET(input[0]))>>24L)&0xff);
 	__GET(iv[1]) = (unsigned char)(((__GET(input[0]))>>16L)&0xff);
 	__GET(iv[2]) = (unsigned char)(((__GET(input[0]))>> 8L)&0xff);
@@ -638,12 +637,12 @@ void alpaca_blowfish_main()
 	__GET(iv[6]) = (unsigned char)(((__GET(input[1]))>> 8L)&0xff);
 	__GET(iv[7]) = (unsigned char)(((__GET(input[1]))     )&0xff);
 
-	 __TRANSITION_TO(10, task_start_encrypt3);
+	 __TRANSITION_TO(9, task_start_encrypt3);
 
 
 
 
-	__TASK(10, task_start_encrypt3);
+	__TASK(9, task_start_encrypt3);
 
     index2_priv = __GET(index2);//scaler
 	n_priv = __GET(n);//scaler
@@ -675,7 +674,7 @@ void alpaca_blowfish_main()
 	else {
         __PRE_COMMIT(&index2_priv, &index2, sizeof(index2));
 		__PRE_COMMIT(&n_priv, &n, sizeof(n));
-		 __TRANSITION_TO(8, task_start_encrypt);	
+		 __TRANSITION_TO(7, task_start_encrypt);	
 	}
 
 }//main

@@ -27,34 +27,25 @@ __GLOBAL_SCALAR(uint16_t,               _v_member);
 static __nv uint16_t  status = 0;  //task_id
 //count for current bench
 static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
-static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit size in a bench
 //count for task[i]
 static const uint8_t TASK_NUM = CUCKOO_TASK_NUM;
 static __nv uint16_t task_count[TASK_NUM] = {0}; //total execution times for task[i]
-static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit times for all execution times of task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit size for all execution times of task[i]
 
 
 //0. all
 static __nv cuckoo_fingerprint_t   _v_filter_priv[CUCKOO_NUM_BUCKETS];
 static __nv uint16_t   _v_filter_vbm[CUCKOO_NUM_BUCKETS];
-
-//static __nv uint16_t               _v_index_priv;
-
 static __nv cuckoo_value_t         _v_key_priv;
-
-//static __nv TaskName               _v_next_task_priv;
 static __nv cuckoo_fingerprint_t   _v_fingerprint_priv;
 static __nv cuckoo_value_t         _v_index1_priv;
-//static __nv cuckoo_value_t         _v_index2_priv;
 static __nv cuckoo_value_t         _v_relocation_count_priv;
 static __nv cuckoo_value_t         _v_insert_count_priv;
-
 static __nv cuckoo_value_t         _v_inserted_count_priv;
 static __nv cuckoo_value_t         _v_lookup_count_priv;
-
 static __nv cuckoo_value_t         _v_member_count_priv;
-//static __nv uint16_t               _v_success_priv;
-//static __nv uint16_t               _v_member_priv;
+
 
 
 void alpaca_cuckoo_main()
@@ -321,21 +312,9 @@ else
 
 __TASK(5, Insert_Done);
 
-    //1. vector
-//_v_filter_priv[CUCKOO_NUM_BUCKETS] = ;
-//1.
-//_v_index_priv = __GET(_v_index);
+  _v_insert_count_priv = __GET(_v_insert_count);
 
-  //_v_key_priv = __GET(_v_key);
-
-  //_v_next_task_priv = __GET(_v_next_task);
-  //_v_fingerprint_priv = __GET(_v_fingerprint);
- /* _v_index1_priv = __GET(_v_index1);
-  _v_index2_priv = __GET(_v_index2);
-  _v_relocation_count_priv = __GET(_v_relocation_count);*/
-  _v_insert_count_priv = __GET(_v_insert_count);//
-
-  _v_inserted_count_priv = __GET(_v_inserted_count); //+_v_insert_count
+  _v_inserted_count_priv = __GET(_v_inserted_count);
   
 
 
@@ -348,13 +327,6 @@ if (_v_insert_count_priv < CUCKOO_NUM_INSERTS)
 {
    __GET(_v_next_task) = CUCKOO_Insert;
    //3
-   /*__PRE_COMMIT(&_v_index_priv, &_v_index, sizeof(_v_index));
-   __PRE_COMMIT(&_v_key_priv, &_v_key, sizeof(_v_key));
-   __PRE_COMMIT(&_v_next_task_priv, &_v_next_task, sizeof(_v_next_task));
-   __PRE_COMMIT(&_v_fingerprint_priv, &_v_fingerprint, sizeof(_v_fingerprint));
-   __PRE_COMMIT(&_v_index1_priv, &_v_index1, sizeof(_v_index1));
-   __PRE_COMMIT(&_v_index2_priv, &_v_index2, sizeof(_v_index2));
-   __PRE_COMMIT(&_v_relocation_count_priv, &_v_relocation_count, sizeof(_v_relocation_count));*/
    __PRE_COMMIT(&_v_insert_count_priv, &_v_insert_count, sizeof(_v_insert_count));
    __PRE_COMMIT(&_v_inserted_count_priv, &_v_inserted_count, sizeof(_v_inserted_count));
 
@@ -376,11 +348,9 @@ __TASK(6, Lookup_Search); //+lookup_done
 
     //1.
 
- _v_lookup_count_priv = __GET(_v_lookup_count);  //+_v_lookup_count
+ _v_lookup_count_priv = __GET(_v_lookup_count); 
 
- _v_member_count_priv = __GET(_v_member_count);//
- //_v_success_priv = __GET(_v_success);
- //_v_member_priv = __GET(_v_member);
+ _v_member_count_priv = __GET(_v_member_count);
  
 
 
@@ -406,8 +376,6 @@ if (_v_lookup_count_priv < CUCKOO_NUM_LOOKUPS)
    //3
    __PRE_COMMIT(&_v_lookup_count_priv, &_v_lookup_count, sizeof(_v_lookup_count));
    __PRE_COMMIT(&_v_member_count_priv, &_v_member_count, sizeof(_v_member_count));
-  /* __PRE_COMMIT(&_v_success_priv, &_v_success, sizeof(_v_success));
-   __PRE_COMMIT(&_v_member_priv, &_v_member, sizeof(_v_member));*/
    __TRANSITION_TO( 1,KeyGenerate);
 }
 else

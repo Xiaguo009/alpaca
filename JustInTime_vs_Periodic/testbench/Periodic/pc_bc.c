@@ -21,6 +21,16 @@ static __nv uint16_t  status = 0;
 static const uint16_t global_war_size = 11;
 static __nv uint16_t  backup_buf[11] = {};
 
+//for test
+static __nv uint16_t task_id = 0;  //task_id
+//count for current bench
+static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
+static __nv uint32_t bench_commit = 0; //total pre_commit size in a bench
+//count for task[i]
+static const uint8_t TASK_NUM = BC_TASK_NUM;
+static __nv uint16_t task_count[TASK_NUM] = {0}; // total execution times for task[i]
+static __nv uint32_t task_commit[TASK_NUM] = {0}; // total pre_commit size for all execution times of task[i]
+
 
 static const bool backup_needed[] = {
     false, true, true, true, true, true, true, true, true

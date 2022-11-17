@@ -2,21 +2,17 @@
 #include <testbench/global_declaration.h>
 #include <testbench/testbench_api.h>
 
-// #define MSG "hello"
-// #define MSG_LEN 5
-
-// char * msgPt = MSG;
 
 //static __nv uint16_t  status = 0;  //cur_task->id
 //for test
 static __nv uint16_t  status = 0;  //task_id
 //count for current bench
 static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
-static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit size in a bench
 //count for task[i]
 static const uint8_t TASK_NUM = RSA_TASK_NUM;
 static __nv uint16_t task_count[TASK_NUM] = {0}; //total execution times for task[i]
-static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit times for all execution times of task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit size for all execution times of task[i]
 
 
 __GLOBAL_SCALAR(long int, p);         //1
@@ -64,7 +60,7 @@ static __nv long int de_j_priv;
 void alpaca_rsa_main()
 {
 
- switch(__GET_CURTASK) {
+    switch(__GET_CURTASK) {
     case 0: goto initTask; //     
     case 1: goto ce_1; //         
     case 2: goto ce_2; //              
@@ -74,11 +70,10 @@ void alpaca_rsa_main()
     case 6: goto ce_4; //          //6     
     case 7: goto encrypt_init; //  //7
     case 8: goto encrypt_inner_loop;
-    case 9: goto encrypt_finish; //     
-    //case 10: goto encrypt_print; //     
-    case 11: goto decrypt_init; //     
-    case 12: goto decrypt_inner_loop; 
-    case 13: goto decrypt_finish; //       
+    case 9: goto encrypt_finish; //          
+    case 10: goto decrypt_init; //     
+    case 11: goto decrypt_inner_loop; 
+    case 12: goto decrypt_finish; //       
     }
 
 
@@ -271,12 +266,12 @@ en_cnt_priv = __GET(en_cnt);
         __GET(en[ __GET(en_cnt_priv) ]) = -1;
         //
         __PRE_COMMIT(&en_cnt_priv, &en_cnt, sizeof(en_cnt));
-        __TRANSITION_TO(11, decrypt_init);
+        __TRANSITION_TO(10, decrypt_init);
     }
 
 
 
-__TASK(11, decrypt_init); // 11
+__TASK(10, decrypt_init); // 11
 
 
    //long int __cry;
@@ -285,11 +280,11 @@ __TASK(11, decrypt_init); // 11
    __cry =__GET(d[0]);
    __GET(de_key) = __cry;
 
-    __TRANSITION_TO(12, decrypt_inner_loop);
+    __TRANSITION_TO(11, decrypt_inner_loop);
 
 
 
-__TASK(12, decrypt_inner_loop); // 12
+__TASK(11, decrypt_inner_loop); // 12
 // war de_k de_j
 de_k_priv = __GET(de_k);
 de_j_priv = __GET(de_j);
@@ -308,18 +303,18 @@ de_j_priv = __GET(de_j);
         //
         __PRE_COMMIT(&de_k_priv, &de_k, sizeof(de_k));
         __PRE_COMMIT(&de_j_priv, &de_j, sizeof(de_j));
-        __TRANSITION_TO(12, decrypt_inner_loop);
+        __TRANSITION_TO(11, decrypt_inner_loop);
     } else {
         __PRE_COMMIT(&de_k_priv, &de_k, sizeof(de_k));
         __PRE_COMMIT(&de_j_priv, &de_j, sizeof(de_j));
-        __TRANSITION_TO(13, decrypt_finish);
+        __TRANSITION_TO(12, decrypt_finish);
     }
 
 
 
 
 
-__TASK(13, decrypt_finish); // 13
+__TASK(12, decrypt_finish); // 13
 // war de_cnt
 de_cnt_priv = __GET(de_cnt);
 
@@ -334,7 +329,7 @@ de_cnt_priv = __GET(de_cnt);
         __GET(de_cnt_priv)++;
         //
         __PRE_COMMIT(&de_cnt_priv, &de_cnt, sizeof(de_cnt));
-        __TRANSITION_TO(11, decrypt_init);
+        __TRANSITION_TO(10, decrypt_init);
     } else {
         __PRE_COMMIT(&de_cnt_priv, &de_cnt, sizeof(de_cnt));
         __TASK_DOWN;  //down

@@ -1,14 +1,44 @@
-//tasks for sha256
+#include <testbench/alpaca.h>
+#include <testbench/global_declaration.h>
+#include <testbench/testbench_api.h>
+//todo 
+//find war 
+//pre_commit 
 
-//__SHARED_VAR 
-__nv WORD msg[16];  // message block for 512-bit.
+typedef uint32_t WORD;
 
-__nv uint16_t ei, ri;
-__nv WORD msg_exp[64];       // expanded message blocks.
-__nv WORD msg_hash[8];       // hash results.
-__nv WORD round_regs[64][8]; // round registers.
+//__GLOBAL_SCALAR or ARRAY
+static __nv WORD msg[16];  // message block for 512-bit.
+
+static __nv uint16_t ei, ri;
+static __nv WORD msg_exp[64];       // expanded message blocks.
+static __nv WORD msg_hash[8];       // hash results.
+static __nv WORD round_regs[64][8]; // round registers.
 
 
+//static __nv uint16_t  status = 0;  //cur_task->id
+//for test
+static __nv uint16_t  status = 0;  //task_id
+//count for current bench
+static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit size in a bench
+//count for task[i]
+static const uint8_t TASK_NUM = SHA256_TASK_NUM;
+static __nv uint16_t task_count[TASK_NUM] = {0}; // total execution times for task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; // total pre_commit size for all execution times of task[i]
+
+
+void alpaca_sha256_main()
+{
+
+    switch(__GET_CURTASK) {
+        case 0: goto vector_init;
+        case 1: goto message_padding;
+        case 2: goto message_expansion;
+        case 3: goto message_round_init;
+        case 4: goto message_round;
+        case 5: goto message_round_final;
+        }
 
 __TASK(0,vector_init);
     for (uint16_t i = 0; i < 8; ++i){
@@ -35,7 +65,7 @@ __TASK(1,message_padding);
     __GET(msg[15]) = (WORD)(8 * msg_len);
 
     __GET(ei) = 0;
-    __NEXT(2,message_expansion);
+    __TRANSITION_TO(2,message_expansion);
 
 
 __TASK(2,message_expansion);
@@ -50,11 +80,11 @@ __TASK(2,message_expansion);
 
     __GET(ei)++;
     if (__GET(ei) >= 64){
-        __NEXT(4, message_round);
+        __TRANSITION_TO(4, message_round);
     }
     else
     {
-        __NEXT(3,message_round_init);
+        __TRANSITION_TO(3,message_round_init);
     }
 
 __TASK(3,message_round_init);
@@ -62,7 +92,7 @@ __TASK(3,message_round_init);
         __GET(round_regs[0][i]) = __GET(msg_hash[i]);
     }
     __GET(ri) = 0;
-    __NEXT(4,message_round);
+    __TRANSITION_TO(4,message_round);
 
 
 __TASK(4,message_round);
@@ -91,10 +121,10 @@ __TASK(4,message_round);
 
     __GET(ri)++;
     if (__GET(ri) >= 64) {
-        __NEXT(5,message_round_final);
+        __TRANSITION_TO(5,message_round_final);
     }
     else {
-        __NEXT(4,message_round);
+        __TRANSITION_TO(4,message_round);
     }
 
 __TASK(5,message_round_final);
@@ -104,4 +134,3 @@ __TASK(5,message_round_final);
     __TASK_DOWN;
 
 }
-

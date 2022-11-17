@@ -39,7 +39,14 @@
 #define __IS_TASK_RUNNING       ((status & 0xF000) != 0)
 
 #define __NEXT(id, name)        status = id; goto name
-#define __FINISH                first_run = 1; return
+#define __FINISH                                                                                            \
+        first_run = 1;                                                                                      \
+    printf("bench_task_count:%d,bench_commit_size(bytes):%ld.\n", bench_task_count, bench_commit);           \
+    for (uint16_t i = 0; i < TASK_NUM; i++)                                                                 \
+    {                                                                                                       \
+        printf("task_id:%d,task_count:%d,task_commit_size(bytes):%ld.\n", i, task_count[i], task_commit[i]); \
+    }                                                                                                       \
+    return
 
 #define __SHARED_VAR(...) \
         typedef struct { __VA_ARGS__ } FRAM_data_t  __attribute__ ((aligned (2))); \
@@ -49,15 +56,17 @@
 
 #define __BUILDIN_TASK_BOUNDARY(id, name)                           \
     name:                                                           \
+    task_id = id;                                                   \
     if (backup_needed[__GET_CURTASK] == true && !__IS_TASK_RUNNING) \
     {                                                               \
         BUILDIN_BACKUP;                                             \
+        bench_commit += global_war_size * 2;                        \
+        task_commit[id] += global_war_size * 2;                     \
     }                                                               \
-    status |= 0xF000
-    //++task_count
-    //printf("id: %d. task count: %d. \n",id,++task_count)
-    
-    
-
+    status |= 0xF000;                                               \
+    ++task_count[id];                                               \
+    ++bench_task_count
+//++task_count
+// printf("id: %d. task count: %d. \n",id,++task_count)
 
 #endif /* TESTBENCH_PERIODIC_SCHEDULER_H_ */

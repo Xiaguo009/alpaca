@@ -113,7 +113,7 @@ void message_round() {
     round_regs[ri][5] = round_regs[ri][4];
     round_regs[ri][4] = round_regs[ri][3] + t1;
     round_regs[ri][3] = round_regs[ri][2];
-    round_regs[ri][2] = round_regs[r1][1];
+    round_regs[ri][2] = round_regs[ri][1];
     round_regs[ri][1] = round_regs[ri][0];
     round_regs[ri][0] = t1 + t2;
 

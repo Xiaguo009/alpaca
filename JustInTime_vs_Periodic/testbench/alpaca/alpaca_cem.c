@@ -26,28 +26,19 @@ __GLOBAL_ARRAY(cem_node_t,     _v_dict,CEM_DICT_SIZE);
 static __nv uint16_t  status = 0;  //task_id
 //count for current bench
 static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
-static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit size in a bench
 //count for task[i]
 static const uint8_t TASK_NUM = CEM_TASK_NUM;
 static __nv uint16_t task_count[TASK_NUM] = {0}; //total execution times for task[i]
-static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit times for all execution times of task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit size for all execution times of task[i]
 
 
-// 0.
-//node_t _v_compressed_data[BLOCK_SIZE];//192
-//static __nv cem_letter_t _v_letter_priv;//193
-static __nv uint16_t _v_letter_idx_priv;  //194
 
-static __nv cem_sample_t _v_prev_sample_priv;//195
-
-static __nv cem_index_t _v_out_len_priv;//196
-
+static __nv uint16_t _v_letter_idx_priv;  
+static __nv cem_sample_t _v_prev_sample_priv;
+static __nv cem_index_t _v_out_len_priv;
 static __nv cem_index_t _v_node_count_priv;
-
-//static __nv cem_sample_t _v_sample_priv;//198
-
-static __nv cem_index_t _v_sample_count_priv;//199
-
+static __nv cem_index_t _v_sample_count_priv;
 static __nv cem_index_t _v_sibling_priv;
 
 void alpaca_cem_main()
@@ -85,10 +76,7 @@ __TRANSITION_TO(1, Dict_Init);
 
 __TASK(1, Dict_Init);
 
-    //1.
-    //_v_letter_idx_priv = __GET(_v_letter);//193
-
-for (uint16_t i = 0; i < CEM_NUM_LETTERS; ++i) //i will be released after for-loop
+for (uint16_t i = 0; i < CEM_NUM_LETTERS; ++i) 
 {
    __GET(_v_dict[i].letter) = i;
    __GET(_v_dict[i].sibling) = CEM_NIL;
@@ -96,23 +84,20 @@ for (uint16_t i = 0; i < CEM_NUM_LETTERS; ++i) //i will be released after for-lo
 }
 
 __GET(_v_letter) = CEM_NUM_LETTERS + 1;
-__GET(_v_node_count) = CEM_NUM_LETTERS; //16
+__GET(_v_node_count) = CEM_NUM_LETTERS;
 
-//3
-//__PRE_COMMIT(&_v_letter_idx_priv, &_v_letter, sizeof(_v_letter));
+
 __TRANSITION_TO(2, Sample);
 
 
 
 __TASK(2, Sample);
-// 1.
-_v_letter_idx_priv = __GET(_v_letter_idx);//193 
+
+_v_letter_idx_priv = __GET(_v_letter_idx);
 
 uint16_t next_letter_idx = _v_letter_idx_priv + 1;
 if (next_letter_idx == CEM_NUM_LETTERS_IN_SAMPLE)
    next_letter_idx = 0;
-
-//printf("_v_letter_idx_priv,_v_letter: %d,%d.", _v_letter_idx_priv,_v_letter); //debug
 
 if (_v_letter_idx_priv == 0)
 {
@@ -133,7 +118,7 @@ else
 
 __TASK(3, Measure_Temp);
 // 1.
-_v_prev_sample_priv = __GET(_v_prev_sample); // 195
+_v_prev_sample_priv = __GET(_v_prev_sample); 
 
 cem_sample_t prev_sample = _v_prev_sample_priv;
 cem_sample_t sample = CEM_AcquireSample(prev_sample);
@@ -165,8 +150,7 @@ __TRANSITION_TO(5, Compress);
 
 __TASK(5, Compress);
 
-    //1.
-_v_sample_count_priv = __GET(_v_sample_count); // 199
+_v_sample_count_priv = __GET(_v_sample_count);
 
 cem_index_t parent = __GET(_v_parent_next);
 __GET(_v_parent_node.letter) = __GET(_v_dict[parent].letter);
@@ -185,9 +169,8 @@ __TRANSITION_TO(6, Find_Sibling);
 
 
 __TASK(6, Find_Sibling);
-// 1.
-_v_sibling_priv = __GET(_v_sibling); // 198
 
+_v_sibling_priv = __GET(_v_sibling); 
 
 if (_v_sibling_priv != CEM_NIL)
 {
@@ -196,7 +179,6 @@ if (_v_sibling_priv != CEM_NIL)
    {
        __GET(_v_parent_next) = _v_sibling_priv;
 
-        //3 unnecessary?
        __PRE_COMMIT(&_v_sibling_priv, &_v_sibling, sizeof(_v_sibling));
 
        __TRANSITION_TO(4, Letterize);
@@ -297,7 +279,7 @@ if(_v_out_len_priv == CEM_BLOCK_SIZE) {
     //3
     __PRE_COMMIT(&_v_out_len_priv, &_v_out_len, sizeof(_v_out_len));
 
-    __TASK_DOWN; //__TRANSITION_TO( TASK_FINISH;
+    __TASK_DOWN; 
 }
 else {
     //3

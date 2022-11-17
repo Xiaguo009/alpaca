@@ -18,11 +18,11 @@ __GLOBAL_SCALAR(dijkstra_queue_t,   nearest_node);
 static __nv uint16_t  status = 0;  //task_id
 //count for current bench
 static __nv uint16_t bench_task_count = 0; //total execution times for all tasks in a bench
-static __nv uint16_t bench_commit = 0; //total pre_commit times in a bench
+static __nv uint16_t bench_commit = 0; //total pre_commit size in a bench
 //count for task[i]
 static const uint8_t TASK_NUM = DIJKSTRA_TASK_NUM;
 static __nv uint16_t task_count[TASK_NUM] = {0}; //total execution times for task[i]
-static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit times for all execution times of task[i]
+static __nv uint16_t task_commit[TASK_NUM] = {0}; //total pre_commit size for all execution times of task[i]
 
 
 // 0.
@@ -53,8 +53,7 @@ void alpaca_dijkstra_main()
 
 
 __TASK(0, init);
-    //1.
-    //src_node_priv = __GET(src_node);
+
 
 __GET(src_node) = 0;
 
@@ -73,8 +72,6 @@ for(uint16_t i = 0; i < DIJKSTRA_NNODES; ++i)
 __GET(node_list[__GET(src_node)].dist) = 0;
 __GET(node_list[__GET(src_node)].prev) = DIJKSTRA_UNDEFINED;
 
-//3
-//__PRE_COMMIT(&src_node_priv, &src_node, sizeof(src_node));
 __TRANSITION_TO(1,Nearest_Node_Sel);
 
 
@@ -106,7 +103,7 @@ if (__GET(enq_idx) != i)
 else {
     //3 unnecessary
     __PRE_COMMIT(&deq_idx_priv, &deq_idx, sizeof(deq_idx));
-    __TASK_DOWN;  //return__TRANSITION_TO( TASK_FINISH;
+    __TASK_DOWN;  
 }
 
 
@@ -116,12 +113,10 @@ __TASK(2, Shorter_Path_Find);
 // 1.
 enq_idx_priv = __GET(enq_idx);//
 node_idx_priv = __GET(node_idx);//
-//nearest_node_priv = __GET(nearest_node);
+
 
 //2.
 uint16_t node = __GET(nearest_node.node); 
-//uint16_t node = nearest_node_priv.node;  //?
-//uint16_t
 i = node_idx_priv;
 uint16_t cost = adj_matrix[node][i];
 
@@ -152,14 +147,12 @@ if (++node_idx_priv < DIJKSTRA_NNODES) {
     //3
     __PRE_COMMIT(&enq_idx_priv, &enq_idx, sizeof(enq_idx));
     __PRE_COMMIT(&node_idx_priv, &node_idx, sizeof(node_idx));
-    //__PRE_COMMIT(&nearest_node_priv, &nearest_node, sizeof(nearest_node));
     __TRANSITION_TO(2, Shorter_Path_Find);
 }
 else {
     //3
     __PRE_COMMIT(&enq_idx_priv, &enq_idx, sizeof(enq_idx));
     __PRE_COMMIT(&node_idx_priv, &node_idx, sizeof(node_idx));
-    //__PRE_COMMIT(&nearest_node_priv, &nearest_node, sizeof(nearest_node));
     __TRANSITION_TO(1, Nearest_Node_Sel);
 }
 
