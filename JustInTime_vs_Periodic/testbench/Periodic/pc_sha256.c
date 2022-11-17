@@ -1,25 +1,23 @@
 #include <testbench/global_declaration.h> 
 #include <testbench/Periodic_scheduler.h>
 #include <testbench/testbench_api.h>
-//TODO: 
-//checkout for typedef unsigned uint32_t; 
-//backup size
+//backup down
 
 __SHARED_VAR(
-WORD msg[16];  // message block for 512-bit.
-
 uint16_t ei, ri;
-WORD msg_exp[64];       // expanded message blocks.
-WORD msg_hash[8];       // hash results.
 WORD round_regs[64][8]; // round registers.
+WORD msg_exp[64];       // expanded message blocks.
+
+WORD msg[16];  // message block for 512-bit.
+WORD msg_hash[8];       // hash results.
+
 )
 
 static __nv bool      first_run = 1;  
 static __nv uint16_t  status = 0;
-//need to change
-static const uint16_t global_war_size = 0;
-static __nv uint16_t  backup_buf[1] = {0};
-static const bool backup_needed[] = { false, true, true,false, true, true };
+static const uint16_t global_war_size = 2+64*8*2+64*2;
+static __nv uint16_t  backup_buf[2+64*8*2+64*2] = {0};
+static const bool backup_needed[] = {false, false, true, false, true, false};
 
 void pc_sha256_main()
 {
