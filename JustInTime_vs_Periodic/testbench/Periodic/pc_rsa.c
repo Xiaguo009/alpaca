@@ -80,12 +80,10 @@ void pc_rsa_main()
     case 6: goto ce_4; //          //6     
     case 7: goto encrypt_init; //  //7
     case 8: goto encrypt_inner_loop;
-    case 9: goto encrypt_finish; //     
-    //case 10: goto encrypt_print; //     
-    case 11: goto decrypt_init; //     
-    case 12: goto decrypt_inner_loop; 
-    case 13: goto decrypt_finish; //   
-    //case 14: goto decrypt_print; //     
+    case 9: goto encrypt_finish; //          
+    case 10: goto decrypt_init; //     
+    case 11: goto decrypt_inner_loop; 
+    case 12: goto decrypt_finish; //       
     }
 
 __BUILDIN_TASK_BOUNDARY(0,initTask); // 0
@@ -253,12 +251,12 @@ __BUILDIN_TASK_BOUNDARY(9, encrypt_finish); // 9
         __NEXT(7, encrypt_init);
     } else {
         __GET(en[ __GET(en_cnt) ]) = -1;
-        __NEXT(11, decrypt_init);
+        __NEXT(10, decrypt_init);
     }
 
 
 
-__BUILDIN_TASK_BOUNDARY(11, decrypt_init); // 11
+__BUILDIN_TASK_BOUNDARY(10, decrypt_init); // 11
 
 
    //long int __cry;
@@ -267,11 +265,11 @@ __BUILDIN_TASK_BOUNDARY(11, decrypt_init); // 11
    __cry =__GET(d[0]);
    __GET(de_key) = __cry;
 
-    __NEXT(12, decrypt_inner_loop);
+    __NEXT(11, decrypt_inner_loop);
 
 
 
-__BUILDIN_TASK_BOUNDARY(12, decrypt_inner_loop); // 12
+__BUILDIN_TASK_BOUNDARY(11, decrypt_inner_loop); // 12
 // war de_k de_j
 
    //long int __cry;
@@ -285,16 +283,16 @@ __BUILDIN_TASK_BOUNDARY(12, decrypt_inner_loop); // 12
         __cry = __GET(de_k) % __GET(n);
         __GET(de_k) = __cry;
         __GET(de_j)++;
-         __NEXT(12, decrypt_inner_loop);
+         __NEXT(11, decrypt_inner_loop);
     } else {
-         __NEXT(13, decrypt_finish);
+         __NEXT(12, decrypt_finish);
     }
 
 
 
 
 
-__BUILDIN_TASK_BOUNDARY(13, decrypt_finish); // 13
+__BUILDIN_TASK_BOUNDARY(12, decrypt_finish); // 13
 
 //long int de_cnt;
 
@@ -305,7 +303,7 @@ __BUILDIN_TASK_BOUNDARY(13, decrypt_finish); // 13
 
     if (__GET(en[ __GET(de_cnt) ]) != -1) {
         __GET(de_cnt)++;
-        __NEXT(11, decrypt_init);
+        __NEXT(10, decrypt_init);
     } else {
          __FINISH;  //down
     }

@@ -2,13 +2,8 @@
 #include <testbench/global_declaration.h>
 #include <testbench/testbench_api.h>
 
-// #define MSG "hello"
-// #define MSG_LEN 5
 
-// char * msgPt = MSG;
-
-static __nv uint16_t  status = 0;  //cur_task->id
-
+static __nv uint16_t  status = 0;  //task_id
 
 __GLOBAL_SCALAR(long int, p);         //1
 __GLOBAL_SCALAR(long int, q);
@@ -55,7 +50,7 @@ static __nv long int de_j_priv;
 void alpaca_rsa_main()
 {
 
- switch(__GET_CURTASK) {
+    switch(__GET_CURTASK) {
     case 0: goto initTask; //     
     case 1: goto ce_1; //         
     case 2: goto ce_2; //              
@@ -65,12 +60,10 @@ void alpaca_rsa_main()
     case 6: goto ce_4; //          //6     
     case 7: goto encrypt_init; //  //7
     case 8: goto encrypt_inner_loop;
-    case 9: goto encrypt_finish; //     
-    //case 10: goto encrypt_print; //     
-    case 11: goto decrypt_init; //     
-    case 12: goto decrypt_inner_loop; 
-    case 13: goto decrypt_finish; //   
-    //case 14: goto decrypt_print; //     
+    case 9: goto encrypt_finish; //          
+    case 10: goto decrypt_init; //     
+    case 11: goto decrypt_inner_loop; 
+    case 12: goto decrypt_finish; //       
     }
 
 
@@ -106,10 +99,10 @@ i_priv = __GET(i);
     __GET(i_priv)++; // start with i=2
 
     if (__GET(i_priv) >= __GET(t)) {
-        write_to_gbuf(&i_priv, &i, sizeof(i));
+        __PRE_COMMIT(&i_priv, &i, sizeof(i));
         __TRANSITION_TO(7, encrypt_init);
     } else {
-        write_to_gbuf(&i_priv, &i, sizeof(i));
+        __PRE_COMMIT(&i_priv, &i, sizeof(i));
         __TRANSITION_TO(2, ce_2);
     }
 
@@ -192,10 +185,10 @@ k_priv = __GET(k);
     }
 
     if (__GET(k_priv) < 9) {
-        write_to_gbuf(&k_priv, &k, sizeof(k));
+        __PRE_COMMIT(&k_priv, &k, sizeof(k));
         __TRANSITION_TO(1, ce_1);
     } else {
-        write_to_gbuf(&k_priv, &k, sizeof(k));
+        __PRE_COMMIT(&k_priv, &k, sizeof(k));
         __TRANSITION_TO(7, encrypt_init);
     }
 
@@ -231,12 +224,12 @@ en_j_priv = __GET(en_j);
         __GET(en_k_priv) = __cry;
         __GET(en_j_priv)++;
         //
-        write_to_gbuf(&en_k_priv, &en_k, sizeof(en_k));
-        write_to_gbuf(&en_j_priv, &en_j, sizeof(en_j));
+        __PRE_COMMIT(&en_k_priv, &en_k, sizeof(en_k));
+        __PRE_COMMIT(&en_j_priv, &en_j, sizeof(en_j));
         __TRANSITION_TO(8, encrypt_inner_loop);
     } else {
-        write_to_gbuf(&en_k_priv, &en_k, sizeof(en_k));
-        write_to_gbuf(&en_j_priv, &en_j, sizeof(en_j));
+        __PRE_COMMIT(&en_k_priv, &en_k, sizeof(en_k));
+        __PRE_COMMIT(&en_j_priv, &en_j, sizeof(en_j));
         __TRANSITION_TO(9, encrypt_finish);
     }
 
@@ -257,18 +250,18 @@ en_cnt_priv = __GET(en_cnt);
     if (__GET(en_cnt_priv) < MSG_LEN) {
         __GET(en_cnt_priv)++;
         //
-        write_to_gbuf(&en_cnt_priv, &en_cnt, sizeof(en_cnt));
+        __PRE_COMMIT(&en_cnt_priv, &en_cnt, sizeof(en_cnt));
         __TRANSITION_TO(7, encrypt_init);
     } else {
         __GET(en[ __GET(en_cnt_priv) ]) = -1;
         //
-        write_to_gbuf(&en_cnt_priv, &en_cnt, sizeof(en_cnt));
-        __TRANSITION_TO(11, decrypt_init);
+        __PRE_COMMIT(&en_cnt_priv, &en_cnt, sizeof(en_cnt));
+        __TRANSITION_TO(10, decrypt_init);
     }
 
 
 
-__TASK(11, decrypt_init); // 11
+__TASK(10, decrypt_init); // 11
 
 
    //long int __cry;
@@ -277,11 +270,11 @@ __TASK(11, decrypt_init); // 11
    __cry =__GET(d[0]);
    __GET(de_key) = __cry;
 
-    __TRANSITION_TO(12, decrypt_inner_loop);
+    __TRANSITION_TO(11, decrypt_inner_loop);
 
 
 
-__TASK(12, decrypt_inner_loop); // 12
+__TASK(11, decrypt_inner_loop); // 12
 // war de_k de_j
 de_k_priv = __GET(de_k);
 de_j_priv = __GET(de_j);
@@ -298,20 +291,20 @@ de_j_priv = __GET(de_j);
         __GET(de_k_priv) = __cry;
         __GET(de_j_priv)++;
         //
-        write_to_gbuf(&de_k_priv, &de_k, sizeof(de_k));
-        write_to_gbuf(&de_j_priv, &de_j, sizeof(de_j));
-        __TRANSITION_TO(12, decrypt_inner_loop);
+        __PRE_COMMIT(&de_k_priv, &de_k, sizeof(de_k));
+        __PRE_COMMIT(&de_j_priv, &de_j, sizeof(de_j));
+        __TRANSITION_TO(11, decrypt_inner_loop);
     } else {
-        write_to_gbuf(&de_k_priv, &de_k, sizeof(de_k));
-        write_to_gbuf(&de_j_priv, &de_j, sizeof(de_j));
-        __TRANSITION_TO(13, decrypt_finish);
+        __PRE_COMMIT(&de_k_priv, &de_k, sizeof(de_k));
+        __PRE_COMMIT(&de_j_priv, &de_j, sizeof(de_j));
+        __TRANSITION_TO(12, decrypt_finish);
     }
 
 
 
 
 
-__TASK(13, decrypt_finish); // 13
+__TASK(12, decrypt_finish); // 13
 // war de_cnt
 de_cnt_priv = __GET(de_cnt);
 
@@ -325,23 +318,11 @@ de_cnt_priv = __GET(de_cnt);
     if (__GET(en[ __GET(de_cnt_priv) ]) != -1) {
         __GET(de_cnt_priv)++;
         //
-        write_to_gbuf(&de_cnt_priv, &de_cnt, sizeof(de_cnt));
-        __TRANSITION_TO(11, decrypt_init);
+        __PRE_COMMIT(&de_cnt_priv, &de_cnt, sizeof(de_cnt));
+        __TRANSITION_TO(10, decrypt_init);
     } else {
-        write_to_gbuf(&de_cnt_priv, &de_cnt, sizeof(de_cnt));
+        __PRE_COMMIT(&de_cnt_priv, &de_cnt, sizeof(de_cnt));
         __TASK_DOWN;  //down
     }
 
-
-
-
-
-// __TASK(14, decrypt_print); // 14
-
-//     if (full_run_started) {
-//         full_run_started = 0;
-//     }
-
-//     NEXT(0);
-
-} //main
+}

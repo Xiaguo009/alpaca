@@ -12,23 +12,23 @@
 		__NEXT(0, task_init);            \
 	case 1:                                       \
 		__NEXT(1, task_set_ukey);        \
+	case 2:                                       \
+		__NEXT(2, task_init_key);        \
 	case 3:                                       \
-		__NEXT(3, task_init_key);        \
+		__NEXT(3, task_init_s);          \
 	case 4:                                       \
-		__NEXT(4, task_init_s);          \
+		__NEXT(4, task_set_key);         \
 	case 5:                                       \
-		__NEXT(5, task_set_key);         \
+		__NEXT(5, task_set_key2);        \
 	case 6:                                       \
-		__NEXT(6, task_set_key2);        \
+		__NEXT(6, task_encrypt);         \
 	case 7:                                       \
-		__NEXT(7, task_encrypt);         \
+		__NEXT(7, task_start_encrypt);   \
 	case 8:                                       \
-		__NEXT(8, task_start_encrypt);   \
-	case 9:                                       \
-		__NEXT(9, task_start_encrypt2);  \
-	case 10:                                      \
-		__NEXT(10, task_start_encrypt3); \
-	};
+		__NEXT(8, task_start_encrypt2);  \
+	case 9:                                      \
+		__NEXT(9, task_start_encrypt3); \
+	}
 
 static __ro_nv const char cp[32] = {'1','2','3','4','5','6','7','8','9','0',
 	'A','B','C','D','E','F','F','E','D','C','B','A',
@@ -355,15 +355,14 @@ void pc_blowfish_main()
 	switch(__GET_CURTASK) {
     case 0: goto task_init;
     case 1: goto task_set_ukey;
-    //case 2: goto task_done;
-	case 3: goto task_init_key;
-	case 4: goto task_init_s;
-	case 5: goto task_set_key;
-	case 6: goto task_set_key2;
-	case 7: goto task_encrypt;
-	case 8: goto task_start_encrypt;
-	case 9: goto task_start_encrypt2;
-	case 10: goto task_start_encrypt3;
+	case 2: goto task_init_key;
+	case 3: goto task_init_s;
+	case 4: goto task_set_key;
+	case 5: goto task_set_key2;
+	case 6: goto task_encrypt;
+	case 7: goto task_start_encrypt;
+	case 8: goto task_start_encrypt2;
+	case 9: goto task_start_encrypt3;
 	}
 
 
@@ -396,22 +395,22 @@ void pc_blowfish_main()
 		}
 
 	}
-	__NEXT(3, task_init_key);
+	__NEXT(2, task_init_key);
 
 
 
 	//__BUILDIN_TASK_BOUNDARY(2, task_done);
 
 
-	__BUILDIN_TASK_BOUNDARY(3, task_init_key);
+	__BUILDIN_TASK_BOUNDARY(2, task_init_key);
 	//unsigned i;
 	for (i = 0; i < 18; ++i) {
 		__GET(key[i]) = init_key[i];
 	}
-	 __NEXT(4, task_init_s);
+	 __NEXT(3, task_init_s);
 
 
-	__BUILDIN_TASK_BOUNDARY(4, task_init_s);
+	__BUILDIN_TASK_BOUNDARY(3, task_init_s);
 	//index_priv = __GET(index);//scaler
 
 	//unsigned i;
@@ -434,18 +433,18 @@ void pc_blowfish_main()
 	//if(index_priv == 3){
 		//pre_commit
 		//write_to_gbuf(&index_priv, &index, sizeof(index));
-		 __NEXT(5, task_set_key);
+		 __NEXT(4, task_set_key);
 	}
 	else {
 		++__GET(index);
 		//++index_priv;
 		//write_to_gbuf(&index_priv, &index, sizeof(index));
-		 __NEXT(4, task_init_s);
+		 __NEXT(3, task_init_s);
 	}
 
 
 
-	__BUILDIN_TASK_BOUNDARY(5, task_set_key);
+	__BUILDIN_TASK_BOUNDARY(4, task_set_key);
 
 	//unsigned i;
 	uint32_t ri, ri2;
@@ -472,11 +471,11 @@ void pc_blowfish_main()
 
 		__GET(key[i]) ^= ri;
 	}
-	 __NEXT(6, task_set_key2);
+	 __NEXT(5, task_set_key2);
 
 
 
-	__BUILDIN_TASK_BOUNDARY(6, task_set_key2);
+	__BUILDIN_TASK_BOUNDARY(5, task_set_key2);
     //index2_priv = __GET(index2);//scaler
     
 	if (__GET(index2) == 0) {
@@ -484,10 +483,10 @@ void pc_blowfish_main()
 		__GET(input[1]) = 0;
 
 		__GET(index2) += 2;
-		__GET(next_task) = 6;
+		__GET(next_task) = 5;//6;
 
         //write_to_gbuf(&index2_priv, &index2, sizeof(index2));
-		 __NEXT(7, task_encrypt);
+		 __NEXT(6, task_encrypt);
 	}
 	else {
 		if (__GET(index2) < 20) { //set key
@@ -497,7 +496,7 @@ void pc_blowfish_main()
 			__GET(index2) += 2;
 
             //write_to_gbuf(&index2_priv, &index2, sizeof(index2));
-			 __NEXT(7, task_encrypt);
+			 __NEXT(6, task_encrypt);
 		}
 		else { //set s
 			if (__GET(index2) < (256 + 20)) { //set s0 
@@ -506,7 +505,7 @@ void pc_blowfish_main()
 
 				__GET(index2) += 2;
                 //write_to_gbuf(&index2_priv, &index2, sizeof(index2));
-				 __NEXT(7, task_encrypt);
+				 __NEXT(6, task_encrypt);
 			}
 			else if (__GET(index2) < (512 + 20)) { //set s1
 				__GET(s1[__GET(index2)-(256+20)]) = __GET(input[0]);
@@ -514,7 +513,7 @@ void pc_blowfish_main()
 
 				__GET(index2) += 2;
                 //write_to_gbuf(&index2_priv, &index2, sizeof(index2));
-				 __NEXT(7, task_encrypt);
+				 __NEXT(6, task_encrypt);
 			}
 			else if (__GET(index2) < (256*3 + 20)) { //set s2
 				__GET(s2[__GET(index2)-(256*2+20)]) = __GET(input[0]);
@@ -522,7 +521,7 @@ void pc_blowfish_main()
 
 				__GET(index2) += 2;
                 //write_to_gbuf(&index2_priv, &index2, sizeof(index2));
-				 __NEXT(7, task_encrypt);
+				 __NEXT(6, task_encrypt);
 			}
 			else if (__GET(index2) < (256*4 + 20)) {
 				__GET(s3[__GET(index2)-(256*3+20)]) = __GET(input[0]);
@@ -531,18 +530,18 @@ void pc_blowfish_main()
 				__GET(index2) += 2;
 				if (__GET(index2) < (256*4 + 20)) {
                     //write_to_gbuf(&index2_priv, &index2, sizeof(index2));
-					 __NEXT(7, task_encrypt);
+					 __NEXT(6, task_encrypt);
 				}
 				else { //done
 					__GET(index2) = 0;
                     //write_to_gbuf(&index2_priv, &index2, sizeof(index2));
-					 __NEXT(8, task_start_encrypt);	
+					 __NEXT(7, task_start_encrypt);	
 				}
 			}
 		}
 	}
 
-	__BUILDIN_TASK_BOUNDARY(7, task_encrypt);
+	__BUILDIN_TASK_BOUNDARY(6, task_encrypt);
 	uint32_t p, l, r, s0_local, s1_local, s2_local, s3_local, tmp;
 	//	unsigned index = *READ(__GET(index));
 	//	uint8_t* return_to;
@@ -582,12 +581,12 @@ void pc_blowfish_main()
 	 __GET(input[0]) = l;
 
 	__NEXT_TASK(__GET(next_task));
-	//__NEXT(6, task_set_key2);
+	//__NEXT(5, task_set_key2);
 
 
 
 
-	__BUILDIN_TASK_BOUNDARY(8, task_start_encrypt);
+	__BUILDIN_TASK_BOUNDARY(7, task_start_encrypt);
 	//unsigned i;
 	//	n = *READ(__GET(n));
 	if (__GET(n) == 0) {
@@ -599,16 +598,16 @@ void pc_blowfish_main()
 		__GET(input[1])|=((unsigned long)(__GET(iv[5])))<<16L;
 		__GET(input[1])|=((unsigned long)(__GET(iv[6])))<< 8L;
 		__GET(input[1])|=((unsigned long)(__GET(iv[7])));
-		__GET(next_task) = 9; // TASK_REF(task_start_encrypt2);
-		__NEXT(7, task_encrypt);
+		__GET(next_task) = 8; // 9; // TASK_REF(task_start_encrypt2);
+		__NEXT(6, task_encrypt);
 	}
 	else {
-		 __NEXT(10, task_start_encrypt3);
+		 __NEXT(9, task_start_encrypt3);
 	}
 
 
 
-	__BUILDIN_TASK_BOUNDARY(9, task_start_encrypt2);
+	__BUILDIN_TASK_BOUNDARY(8, task_start_encrypt2);
 	__GET(iv[0]) = (unsigned char)(((__GET(input[0]))>>24L)&0xff);
 	__GET(iv[1]) = (unsigned char)(((__GET(input[0]))>>16L)&0xff);
 	__GET(iv[2]) = (unsigned char)(((__GET(input[0]))>> 8L)&0xff);
@@ -618,12 +617,12 @@ void pc_blowfish_main()
 	__GET(iv[6]) = (unsigned char)(((__GET(input[1]))>> 8L)&0xff);
 	__GET(iv[7]) = (unsigned char)(((__GET(input[1]))     )&0xff);
 
-	 __NEXT(10, task_start_encrypt3);
+	 __NEXT(9, task_start_encrypt3);
 
 
 
 
-	__BUILDIN_TASK_BOUNDARY(10, task_start_encrypt3);
+	__BUILDIN_TASK_BOUNDARY(9, task_start_encrypt3);
 
 	unsigned char c;
     
@@ -640,7 +639,7 @@ void pc_blowfish_main()
 		//__NEXT(2, task_done);	
 	}
 	else {
-        __NEXT(8, task_start_encrypt);	
+        __NEXT(7, task_start_encrypt);	
 	}
 
 }//main

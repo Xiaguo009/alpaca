@@ -1,6 +1,0 @@
-
-alpaca
-benchmark: 0.Cycles: 711424.benchmark: 1.Cycles: 763968.benchmark: 2.Cycles: 1316480.benchmark: 3.Cycles: 199552.benchmark: 4.Cycles: 638976.benchmark: 5.Cycles: 498048.benchmark: 6.Cycles: 1239040.benchmark: 7.Cycles: 707392.benchmark: 8.Cycles: 1896384.
-
-latics
-benchmark: 0.Cycles: -2833728(溢出?).benchmark: 1.Cycles: 225152.benchmark: 2.Cycles: 1240896.benchmark: 3.Cycles: 445504.benchmark: 4.Cycles: 195776.benchmark: 5.Cycles: 1540672.benchmark: 6.Cycles: 1205056.benchmark: 7.Cycles: 512320.benchmark: 8.Cycles: 357248.

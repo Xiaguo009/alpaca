@@ -13,8 +13,7 @@ __GLOBAL_ARRAY(dijkstra_queue_t,   queue,DIJKSTRA_QSIZE);
 __GLOBAL_SCALAR(uint16_t,           src_node);
 __GLOBAL_SCALAR(dijkstra_queue_t,   nearest_node);
 
-static __nv uint16_t  status = 0;  //cur_task->id
-
+static __nv uint16_t  status = 0;
 
 // 0.
 //static __nv uint16_t            src_node_priv;
@@ -44,8 +43,7 @@ void alpaca_dijkstra_main()
 
 
 __TASK(0, init);
-    //1.
-    //src_node_priv = __GET(src_node);
+
 
 __GET(src_node) = 0;
 
@@ -64,8 +62,6 @@ for(uint16_t i = 0; i < DIJKSTRA_NNODES; ++i)
 __GET(node_list[__GET(src_node)].dist) = 0;
 __GET(node_list[__GET(src_node)].prev) = DIJKSTRA_UNDEFINED;
 
-//3
-//write_to_gbuf(&src_node_priv, &src_node, sizeof(src_node));
 __TRANSITION_TO(1,Nearest_Node_Sel);
 
 
@@ -91,13 +87,13 @@ if (__GET(enq_idx) != i)
 
    __GET(node_idx) = 0;
    //3
-   write_to_gbuf(&deq_idx_priv, &deq_idx, sizeof(deq_idx));
+   __PRE_COMMIT(&deq_idx_priv, &deq_idx, sizeof(deq_idx));
    __TRANSITION_TO(2, Shorter_Path_Find);
 }
 else {
     //3 unnecessary
-    write_to_gbuf(&deq_idx_priv, &deq_idx, sizeof(deq_idx));
-    __TASK_DOWN;  //return__TRANSITION_TO( TASK_FINISH;
+    __PRE_COMMIT(&deq_idx_priv, &deq_idx, sizeof(deq_idx));
+    __TASK_DOWN;  
 }
 
 
@@ -107,12 +103,10 @@ __TASK(2, Shorter_Path_Find);
 // 1.
 enq_idx_priv = __GET(enq_idx);//
 node_idx_priv = __GET(node_idx);//
-//nearest_node_priv = __GET(nearest_node);
+
 
 //2.
 uint16_t node = __GET(nearest_node.node); 
-//uint16_t node = nearest_node_priv.node;  //?
-//uint16_t
 i = node_idx_priv;
 uint16_t cost = adj_matrix[node][i];
 
@@ -141,16 +135,14 @@ if (cost != DIJKSTRA_INFINITY)
 
 if (++node_idx_priv < DIJKSTRA_NNODES) {
     //3
-    write_to_gbuf(&enq_idx_priv, &enq_idx, sizeof(enq_idx));
-    write_to_gbuf(&node_idx_priv, &node_idx, sizeof(node_idx));
-    //write_to_gbuf(&nearest_node_priv, &nearest_node, sizeof(nearest_node));
+    __PRE_COMMIT(&enq_idx_priv, &enq_idx, sizeof(enq_idx));
+    __PRE_COMMIT(&node_idx_priv, &node_idx, sizeof(node_idx));
     __TRANSITION_TO(2, Shorter_Path_Find);
 }
 else {
     //3
-    write_to_gbuf(&enq_idx_priv, &enq_idx, sizeof(enq_idx));
-    write_to_gbuf(&node_idx_priv, &node_idx, sizeof(node_idx));
-    //write_to_gbuf(&nearest_node_priv, &nearest_node, sizeof(nearest_node));
+    __PRE_COMMIT(&enq_idx_priv, &enq_idx, sizeof(enq_idx));
+    __PRE_COMMIT(&node_idx_priv, &node_idx, sizeof(node_idx));
     __TRANSITION_TO(1, Nearest_Node_Sel);
 }
 

@@ -12,11 +12,20 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdio.h>//for printf
+#include <stdio.h>
 
-//count
-extern uint32_t task_count;
-
+// ====================================================for count====================================================
+#define AR_TASK_NUM 9
+#define BC_TASK_NUM 9
+#define BLOWFISH_TASK_NUM 10
+#define CEM_TASK_NUM 10
+#define CRC_TASK_NUM 2
+#define CUCKOO_TASK_NUM 7
+#define DIJKSTRA_TASK_NUM 3
+#define RSA_TASK_NUM 13
+#define SORT_TASK_NUM 3
+#define SHA256_TASK_NUM 6
+//#define RSA_TASK_NUM 
 
 // ====================================================  AR  ==================================================== //
 
@@ -183,3 +192,27 @@ extern const uint16_t raw[SORT_LENGTH];
 
 
 #endif /* TESTBENCH_GLOBAL_DECLARATION_H_ */
+
+// ==================================================== SHA256  ===================================================== //
+
+typedef uint32_t WORD;
+
+#define BIT_SET(word, bit)          word |= ((WORD)1 << (bit))
+#define BIT_AND(word1, word2)       ((WORD)(word1) & (WORD)(word2))
+#define BIT_NOT(word)               (~(WORD)(word))
+#define BIT_XOR(word1, word2)       ((WORD)(word1) ^ (WORD)(word2))
+#define SLEFT(word, bit)            ((WORD)(word) << (bit))
+#define SRIGHT (word, bit)          ((WORD)(word) >> (bit))
+#define ROTATE_SLEFT(word, bit)     (((WORD)(word) << (bit)) | ((WORD)(word) >> (32 - (bit))))
+#define ROTATE_SRIGHT(word, bit)    (((WORD)(word) >> (bit)) | ((WORD)(word) << (32 - (bit))))
+
+#define CH(x, y, z)     BIT_XOR(BIT_AND(x, y), BIT_AND(BIT_NOT(x), z))
+#define MA(x, y, z)     BIT_XOR(BIT_XOR(BIT_AND(x, y), BIT_AND(x, z)), BIT_AND(y, z))
+#define BIGSIG0(x)      BIT_XOR(BIT_XOR(ROTATE_SRIGHT(x, 2), ROTATE_SRIGHT(x, 13)), ROTATE_SRIGHT(x, 22))
+#define BIGSIG1(x)      BIT_XOR(BIT_XOR(ROTATE_SRIGHT(x, 6), ROTATE_SRIGHT(x, 11)), ROTATE_SRIGHT(x, 25))
+#define SIG0(x)         BIT_XOR(BIT_XOR(ROTATE_SRIGHT(x, 7), ROTATE_SRIGHT(x, 18)), SRIGHT(x, 3))
+#define SIG1(x)         BIT_XOR(BIT_XOR(ROTATE_SRIGHT(x, 17), ROTATE_SRIGHT(x, 19)), SRIGHT(x, 10))
+
+extern const WORD INIT_VEC[];
+extern const WORD RCST[];
+extern const unsigned char HASH_MSG[];

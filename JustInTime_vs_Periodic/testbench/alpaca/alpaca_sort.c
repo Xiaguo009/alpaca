@@ -8,10 +8,8 @@ __GLOBAL_SCALAR(uint16_t, inner_index);
 __GLOBAL_SCALAR(uint16_t, outer_index);
 __GLOBAL_ARRAY(uint16_t, sorted, SORT_LENGTH);
 
-//3 vars
-//
-static __nv uint16_t  status = 0;  //cur_task->id
 
+static __nv uint16_t  status = 0;  //task_id
 
 //1 for vbm
 //
@@ -79,13 +77,13 @@ void alpaca_sort_main()
     // vector: pre_commit after the first write
     if (!vbm_test(sorted_vbm[__GET(outer_index)])) {
         vbm_set(sorted_vbm[__GET(outer_index)]);
-        write_to_gbuf(&sorted_priv[__GET(outer_index)], &sorted[__GET(outer_index)], sizeof(sorted[__GET(outer_index)]));
+        __PRE_COMMIT(&sorted_priv[__GET(outer_index)], &sorted[__GET(outer_index)], sizeof(sorted[__GET(outer_index)]));
     }
 
     sorted_priv[inner_index_priv] = val_inner;
     if (!vbm_test(sorted_vbm[inner_index_priv])) {
         vbm_set(sorted_vbm[inner_index_priv]);
-        write_to_gbuf(&sorted_priv[inner_index_priv], &sorted[inner_index_priv], sizeof(sorted[inner_index_priv]));
+        __PRE_COMMIT(&sorted_priv[inner_index_priv], &sorted[inner_index_priv], sizeof(sorted[inner_index_priv]));
     }
 
 
@@ -95,11 +93,11 @@ void alpaca_sort_main()
     if (inner_index_priv < SORT_LENGTH) {
 
         // scalar: pre_commit before transition_to=
-        write_to_gbuf(&inner_index_priv, &inner_index, sizeof(inner_index));
+        __PRE_COMMIT(&inner_index_priv, &inner_index, sizeof(inner_index));
         __TRANSITION_TO(1, inner_loop);
     }
     else {
-        write_to_gbuf(&inner_index_priv, &inner_index, sizeof(inner_index));
+        __PRE_COMMIT(&inner_index_priv, &inner_index, sizeof(inner_index));
         __TRANSITION_TO(2, outer_loop);
     }
 
@@ -112,10 +110,10 @@ void alpaca_sort_main()
     __GET(inner_index) = outer_index_priv + 1;
 
     if (outer_index_priv < SORT_LENGTH - 1){
-        write_to_gbuf(&outer_index_priv, &outer_index, sizeof(outer_index));
+        __PRE_COMMIT(&outer_index_priv, &outer_index, sizeof(outer_index));
         __TRANSITION_TO(1, inner_loop);}
     else {  
-        write_to_gbuf(&outer_index_priv, &outer_index, sizeof(outer_index));
+        __PRE_COMMIT(&outer_index_priv, &outer_index, sizeof(outer_index));
         __TASK_DOWN;  //return
     }
 
