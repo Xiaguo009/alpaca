@@ -16,10 +16,6 @@
 [libmsp/mem.h](https://github.com/CMUAbstract/libmsp/blob/master/src/include/libmsp/mem.h)
 <libio/log.h>?
 
-## intermittent computing
-[github.com](https://github.com/IntermittentComputing)
-
-
 # 独立任务
 - 分解任务2  方法:怎么用scope把war备份得更准确 ^task2
 	- [x] **看sort app任务
